@@ -1,4 +1,4 @@
 spring.datasource.url: jdbc:mysql://localhost:3306/blog_engine?useUnicode=true&useSSL=false&serverTimezone=Europe/Moscow&characterEncoding=utf8
 spring.datasource.username: root
 spring.datasource.password: testtest
-spring.jpa.hibernate.ddl-auto: none
+spring.jpa.hibernate.ddl-auto: create
