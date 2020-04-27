@@ -7,10 +7,10 @@ import javax.persistence.*;
 public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private int id; //id тэга
 
     @Column(nullable = false)
-    private String name;
+    private String name; //текст тэга
 
     public int getId() {
         return id;

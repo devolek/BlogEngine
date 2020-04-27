@@ -7,13 +7,13 @@ import javax.persistence.*;
 public class Tag2Post {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private int id; //id связи
 
     @Column(name = "post_id", nullable = false)
-    private int postId;
+    private int postId; //id поста
 
     @Column(name = "tag_id", nullable = false)
-    private int tagId;
+    private int tagId; //id тэга
 
     public int getId() {
         return id;

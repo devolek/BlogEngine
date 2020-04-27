@@ -7,16 +7,16 @@ import javax.persistence.*;
 public class GlobalSetting {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private int id; //id настройки
 
     @Column(nullable = false)
-    private String code;
+    private String code; //системное имя настройки
 
     @Column(nullable = false)
-    private String name;
+    private String name; //название настройки
 
     @Column(nullable = false)
-    private String value;
+    private String value; //значение настройки
 
     public int getId() {
         return id;
