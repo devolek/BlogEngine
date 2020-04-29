@@ -1,8 +1,11 @@
 package main.model;
 
+import lombok.Data;
+
 import javax.persistence.*;
 import java.util.Calendar;
 
+@Data
 @Entity
 @Table(name = "posts")
 public class Post {
@@ -37,75 +40,4 @@ public class Post {
     @Column(name = "view_count", nullable = false)
     private int viewCount; //количество просмотров поста
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getIsActive() {
-        return isActive;
-    }
-
-    public void setIsActive(int isActive) {
-        this.isActive = isActive;
-    }
-
-    public ModerationStatus getModerationStatus() {
-        return moderationStatus;
-    }
-
-    public void setModerationStatus(ModerationStatus moderationStatus) {
-        this.moderationStatus = moderationStatus;
-    }
-
-    public int getModeratorId() {
-        return moderatorId;
-    }
-
-    public void setModeratorId(int moderatorId) {
-        this.moderatorId = moderatorId;
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public Calendar getTime() {
-        return time;
-    }
-
-    public void setTime(Calendar time) {
-        this.time = time;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public int getViewCount() {
-        return viewCount;
-    }
-
-    public void setViewCount(int viewCount) {
-        this.viewCount = viewCount;
-    }
 }

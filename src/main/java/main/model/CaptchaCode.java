@@ -1,8 +1,11 @@
 package main.model;
 
+import lombok.Data;
+
 import javax.persistence.*;
 import java.util.Calendar;
 
+@Data
 @Entity
 @Table(name = "captcha_codes")
 public class CaptchaCode {
@@ -20,35 +23,4 @@ public class CaptchaCode {
     @Column(name = "secret_code", nullable = false, columnDefinition = "TINYTEXT")
     private int secretCode; //код, передаваемый в параметре
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public Calendar getTime() {
-        return time;
-    }
-
-    public void setTime(Calendar time) {
-        this.time = time;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public int getSecretCode() {
-        return secretCode;
-    }
-
-    public void setSecretCode(int secretCode) {
-        this.secretCode = secretCode;
-    }
 }
