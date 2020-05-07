@@ -8,6 +8,12 @@
     <artifactId>BlogEngine</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.2.4.RELEASE</version>
+    </parent>
+
     <properties>
         <java.version>11</java.version>
         <timestamp>${maven.build.timestamp}</timestamp>
@@ -15,6 +21,23 @@
     </properties>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>*.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**/*.*</include>
+                </includes>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -41,39 +64,39 @@
                     <dependency>
                         <groupId>org.liquibase.ext</groupId>
                         <artifactId>liquibase-hibernate5</artifactId>
-                        <version>3.8</version>
+                        <version>3.6</version>
                     </dependency>
                     <dependency>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-starter-data-jpa</artifactId>
-                        <version>2.2.4.RELEASE</version>
+                        <version>2.2.0.RELEASE</version>
                     </dependency>
                 </dependencies>
             </plugin>
-        </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>*.properties</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>false</filtering>
-                <includes>
-                    <include>**/*.*</include>
-                </includes>
-            </resource>
-        </resources>
-    </build>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.4.RELEASE</version>
-    </parent>
+            <plugin>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-maven-plugin</artifactId>
+            <version>3.8.9</version>
+            <configuration>
+                <propertyFile>src/main/resources/liquibase-maven-plugin.properties</propertyFile>
+                <systemProperties>
+                    <user.name>devolek</user.name>
+                </systemProperties>
+                <logging>info</logging>
+            </configuration>
+            <executions>
+                <execution>
+                    <phase>process-resources</phase>
+                    <goals>
+                        <goal>update</goal>
+                    </goals>
+                </execution>
+            </executions>
+            </plugin>
+        </plugins>
+
+    </build>
 
     <dependencies>
 
@@ -107,7 +130,6 @@
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
-            <version>3.8.9</version>
         </dependency>
 
     </dependencies>
