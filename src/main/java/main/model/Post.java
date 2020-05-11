@@ -1,9 +1,9 @@
 package main.model;
 
 import lombok.Data;
+import main.enums.ModerationStatus;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -42,10 +42,15 @@ public class Post {
     @Column(name = "view_count", nullable = false)
     private int viewCount; //количество просмотров поста
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     private List<PostComment> comments;
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<PostVote> postVotes;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "Tag2Post",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private List<Tag> tags;
 }

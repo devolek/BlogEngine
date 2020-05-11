@@ -12,10 +12,10 @@ public class Tag2Post {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id; //id связи
 
-    @ManyToOne
-    private Post post; //id поста
+    @Column(name = "post_id")
+    private int postId; //id поста
 
-    @ManyToOne
-    private Tag tag; //id тэга
+    @Column(name = "tag_id")
+    private int tagId; //id тэга
 
 }

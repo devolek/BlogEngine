@@ -1,21 +1,30 @@
 package main.controller;
 
+import main.enums.ModerationStatus;
 import main.model.*;
+import main.repo.PostRepository;
+import main.repo.TagRepository;
+import main.repo.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @RestController
+@RequestMapping("/api/post")
 public class ApiPostController {
     @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TagRepository tagRepository;
 
-    @GetMapping("/api/post/")
+    @GetMapping
     public PostResponse getPosts(int offset, int limit, String mode){
         ArrayList<Post> posts = new ArrayList<>();
         Iterable<Post> postIterable = postRepository.findAll();
@@ -23,10 +32,10 @@ public class ApiPostController {
         for (Post post : postIterable){
             if(post.getIsActive() == 1 &&
                     post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
-                    post.getTime().before(Calendar.getInstance())){
+                    !post.getTime().after(Calendar.getInstance())){
                 posts.add(post);
+                count++;
             }
-            count++;
         }
         switch (mode){
             case "recent" : {
@@ -82,5 +91,254 @@ public class ApiPostController {
         posts = new ArrayList<>(posts.subList(offset, Math.min(posts.size() - offset, limit)));
 
     return new PostResponse(count, posts);
+    }
+
+    @GetMapping("/search")
+    public PostResponse searchPost(int offset, int limit, String query){
+        Iterable<Post> postIterable;
+        if (query != null && !query.isEmpty()) {
+            postIterable = postRepository.findAllByTitleContainingOrTextContaining(query, query);
+        }
+        else {
+            postIterable = postRepository.findAll();
+        }
+
+        ArrayList<Post> posts = new ArrayList<>();
+        int count = 0;
+        for (Post post: postIterable){
+            if (post.getIsActive() == 1 &&
+                    post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
+                    !post.getTime().after(Calendar.getInstance())){
+                posts.add(post);
+                count++;
+            }
+        }
+
+        postIterable.forEach(posts::add);
+
+        posts = new ArrayList<>(posts.subList(offset, Math.min(posts.size() - offset, limit)));
+        return new PostResponse(count, posts);
+    }
+
+    @GetMapping("/{ID}")
+    public ResponseEntity getPost(@PathVariable int ID){
+        Optional<Post> post = postRepository.findById(ID);
+        return post.isPresent() ? new ResponseEntity(post, HttpStatus.OK) : ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
+
+    @GetMapping("/byDate")
+    public Map<String, Object> getPostByDate(int offset, int limit, String date) throws ParseException {
+        Iterable<Post> postIterable;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar time = Calendar.getInstance();
+        time.setTime(sdf.parse(date));
+
+        if (date != null && !date.isEmpty()){
+            postIterable = postRepository.findAllByTimeContaining(time);
+        }
+        else {
+            postIterable = postRepository.findAll();
+        }
+
+        ArrayList<Post> posts = new ArrayList<>();
+        int count = 0;
+        for (Post post: postIterable){
+            if (post.getIsActive() == 1 &&
+                    post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
+                    !post.getTime().after(Calendar.getInstance())){
+                posts.add(post);
+                count++;
+            }
+        }
+
+        posts = new ArrayList<>(posts.subList(offset, Math.min(posts.size() - offset, limit)));
+        HashMap<String, Object> model = new HashMap<>();
+        model.put("count", count);
+        model.put("posts", posts);
+        return model;
+    }
+
+    @GetMapping("/byTag")
+    public PostResponse getPostByTag(int offset, int limit, Tag tag) {
+        Iterable<Post> postIterable;
+        if (tag != null){
+            postIterable = postRepository.findAllByTagsContains(tag);
+        }
+        else {
+            postIterable = postRepository.findAll();
+        }
+        ArrayList<Post> posts = new ArrayList<>();
+        int count = 0;
+        for (Post post : postIterable) {
+            if (post.getIsActive() == 1 &&
+                    post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
+                    !post.getTime().after(Calendar.getInstance())) {
+                posts.add(post);
+                count++;
+            }
+        }
+
+        posts = new ArrayList<>(posts.subList(offset, Math.min(posts.size() - offset, limit)));
+        return new PostResponse(count, posts);
+    }
+
+    @GetMapping("/moderation")
+    public Map<String, Object> getPostModeration(int offset, int limit, ModerationStatus moderationStatus, int moderatorId){
+        Iterable<Post> postIterable = postRepository.findAllByModerationStatusAndModeratorId(moderationStatus, moderatorId);
+        ArrayList<Post> posts = new ArrayList<>();
+        int count = 0;
+        for (Post post : postIterable) {
+            if (post.getIsActive() == 1 &&
+                    post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
+                    !post.getTime().after(Calendar.getInstance())) {
+                posts.add(post);
+                count++;
+            }
+        }
+
+        posts = new ArrayList<>(posts.subList(offset, Math.min(posts.size() - offset, limit)));
+
+        HashMap<String, Object> model = new HashMap<>();
+        model.put("count", count);
+        model.put("posts", posts);
+        return model;
+    }
+
+    @GetMapping("/my")
+    public Map<String, Object> getMyPosts(int offset, int limit, String status, int userId) {
+        Optional<User> user = userRepository.findById(userId);
+        ArrayList<Post> posts = new ArrayList<>();
+        int count = 0;
+
+        if (user.isPresent()) {
+            Iterable<Post> postIterable = postRepository.findAllByUser(user.get());
+            for (Post post : postIterable){
+                count++;
+            }
+            switch (status){
+                case "inactive" : {
+                    for (Post post : postIterable){
+                        if (post.getIsActive() == 0){
+                            posts.add(post);
+                        }
+                    }
+                    break;
+                }
+                case "pending" : {
+                    for (Post post : postIterable){
+                        if (post.getIsActive() == 1 && post.getModerationStatus().equals(ModerationStatus.NEW)){
+                            posts.add(post);
+                        }
+                    }
+                    break;
+                }
+                case "declined" : {
+                    for (Post post : postIterable){
+                        if (post.getIsActive() == 1 && post.getModerationStatus().equals(ModerationStatus.DECLINED)){
+                            posts.add(post);
+                        }
+                    }
+                    break;
+                }
+                case "published" : {
+                    for (Post post : postIterable){
+                        if (post.getIsActive() == 1 && post.getModerationStatus().equals(ModerationStatus.ACCEPTED)){
+                            posts.add(post);
+                        }
+                    }
+                    break;
+                }
+                default: break;
+            }
+        }
+        HashMap<String, Object> model = new HashMap<>();
+        posts = new ArrayList<>(posts.subList(offset, Math.min(posts.size() - offset, limit)));
+        model.put("count", count);
+        model.put("posts", posts);
+        return model;
+    }
+
+    @PostMapping
+    public Map<String, Object> addPost(String time, int active, String title , String text, String tags) throws ParseException {
+        HashMap<String, Object> model = new HashMap<>();
+        HashMap<String, Object> errors = new HashMap<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(sdf.parse(time));
+
+        if (title.isEmpty()){
+            errors.put("title", "Заголовок не установлен");
+        }
+        else if (title.length() < 10){
+            errors.put("title", "Заголовок слишком короткий");
+        }
+
+        if (text.isEmpty()){
+            errors.put("text", "Текст публикации не установлен");
+        }
+        else if (text.length() < 500){
+            errors.put("text", "Текст публикации слишком короткий");
+        }
+
+        if (!errors.isEmpty()){
+            model.put("result", false);
+            model.put("errors", errors);
+            return model;
+        }
+
+        Post newPost = new Post();
+        newPost.setTime(calendar.before(Calendar.getInstance()) ? Calendar.getInstance() : calendar);
+        newPost.setIsActive(active);
+        newPost.setTitle(title);
+        newPost.setText(text);
+        newPost.setModerationStatus(ModerationStatus.NEW);
+        newPost.setViewCount(0);
+        User user;
+        if (userRepository.findById(7).isPresent()){
+            user = userRepository.findById(7).get();
+        }
+        else {
+            user = new User();
+            user.setIsModerator(0);
+            user.setRegTime(Calendar.getInstance());
+            user.setName("name");
+            user.setEmail("email@mail.ru");
+            user.setPassword("1234");
+            userRepository.save(user);
+        }
+
+        newPost.setUser(user);
+
+        ArrayList<Tag> tagList = new ArrayList<>();
+        if (tags.contains(",")){
+            String[] tag = tags.split(",\\s+");
+            for (String str : tag){
+            Optional<Tag> tagOptional = tagRepository.findByName(str);
+            if (tagOptional.isPresent()){
+                tagList.add(tagOptional.get());
+            }
+            else {
+                Tag newTag = new Tag();
+                newTag.setName(str);
+                tagList.add(tagRepository.save(newTag));
+            }
+            }
+        }
+        else {
+            Optional<Tag> tagOptional = tagRepository.findByName(tags.trim());
+            if (tagOptional.isPresent()){
+                tagList.add(tagOptional.get());
+            }
+            else {
+                Tag newTag = new Tag();
+                newTag.setName(tags.trim());
+                tagList.add(tagRepository.save(newTag));
+            }
+        }
+
+        newPost.setTags(tagList);
+        postRepository.save(newPost);
+        model.put("result", true);
+        return model;
     }
 }
