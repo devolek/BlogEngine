@@ -14,11 +14,11 @@ public class PostVote {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id; //id лайка/дизлайка
 
-    @Column(name = "user_id", nullable = false)
-    private int userId; //тот, кто поставил лайк / дизлайк
+    @ManyToOne
+    private User user; //тот, кто поставил лайк / дизлайк
 
-    @Column(name = "post_id", nullable = false)
-    private int postId; //пост, которому поставлен лайк / дизлайк
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Post post; //пост, которому поставлен лайк / дизлайк
 
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)

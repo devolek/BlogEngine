@@ -13,14 +13,14 @@ public class PostComment {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id; //id комментария
 
-    @Column(name = "parent_id")
-    private int parentId; //комментарий, на который оставлен этот комментарий (может быть NULL, если комментарий оставлен просто к посту)
+    @ManyToOne(cascade = CascadeType.ALL)
+    private PostComment parent; //комментарий, на который оставлен этот комментарий (может быть NULL, если комментарий оставлен просто к посту)
 
-    @Column(name = "post_id", nullable = false)
-    private int postId; //пост, к которому написан комментарий
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Post post; //пост, к которому написан комментарий
 
-    @Column(name = "user_id", nullable = false)
-    private int userId; //автор комментария
+    @ManyToOne(cascade = CascadeType.ALL)
+    private User user; //автор комментария
 
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)

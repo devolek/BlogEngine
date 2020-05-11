@@ -1,9 +1,11 @@
 package main.model;
 
 import lombok.Data;
+import main.enums.ModerationStatus;
 
 import javax.persistence.*;
 import java.util.Calendar;
+import java.util.List;
 
 @Data
 @Entity
@@ -24,8 +26,8 @@ public class Post {
     @Column(name = "moderator_id")
     private int moderatorId; //ID пользователя-модератора, принявшего решение, или NULL
 
-    @Column(name = "user_id", nullable = false)
-    private int userId; //автор поста
+    @ManyToOne(cascade = CascadeType.ALL)
+    private User user; //автор поста
 
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)
@@ -40,4 +42,15 @@ public class Post {
     @Column(name = "view_count", nullable = false)
     private int viewCount; //количество просмотров поста
 
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<PostComment> comments;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<PostVote> postVotes;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "Tag2Post",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private List<Tag> tags;
 }
