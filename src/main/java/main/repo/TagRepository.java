@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface TagRepository extends CrudRepository<Tag, Integer> {
 
     Optional<Tag> findByName(String name);
+
+    List<Tag> findAllByNameStartsWith (String name);
 }

@@ -26,17 +26,11 @@ public class ApiPostController {
 
     @GetMapping
     public PostResponse getPosts(int offset, int limit, String mode){
-        ArrayList<Post> posts = new ArrayList<>();
         Iterable<Post> postIterable = postRepository.findAll();
-        int count = 0;
-        for (Post post : postIterable){
-            if(post.getIsActive() == 1 &&
-                    post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
-                    !post.getTime().after(Calendar.getInstance())){
-                posts.add(post);
-                count++;
-            }
-        }
+        Map<String, Object> map = getVisiblePosts(postIterable);
+        ArrayList<Post> posts = (ArrayList<Post>) map.get("posts");
+        int count = (int) map.get("count");
+
         switch (mode){
             case "recent" : {
                 posts.sort((o1, o2) -> {
@@ -103,16 +97,9 @@ public class ApiPostController {
             postIterable = postRepository.findAll();
         }
 
-        ArrayList<Post> posts = new ArrayList<>();
-        int count = 0;
-        for (Post post: postIterable){
-            if (post.getIsActive() == 1 &&
-                    post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
-                    !post.getTime().after(Calendar.getInstance())){
-                posts.add(post);
-                count++;
-            }
-        }
+        Map<String, Object> map = getVisiblePosts(postIterable);
+        ArrayList<Post> posts = (ArrayList<Post>) map.get("posts");
+        int count = (int) map.get("count");
 
         postIterable.forEach(posts::add);
 
@@ -140,16 +127,9 @@ public class ApiPostController {
             postIterable = postRepository.findAll();
         }
 
-        ArrayList<Post> posts = new ArrayList<>();
-        int count = 0;
-        for (Post post: postIterable){
-            if (post.getIsActive() == 1 &&
-                    post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
-                    !post.getTime().after(Calendar.getInstance())){
-                posts.add(post);
-                count++;
-            }
-        }
+        Map<String, Object> map = getVisiblePosts(postIterable);
+        ArrayList<Post> posts = (ArrayList<Post>) map.get("posts");
+        int count = (int) map.get("count");
 
         posts = new ArrayList<>(posts.subList(offset, Math.min(posts.size() - offset, limit)));
         HashMap<String, Object> model = new HashMap<>();
@@ -167,16 +147,10 @@ public class ApiPostController {
         else {
             postIterable = postRepository.findAll();
         }
-        ArrayList<Post> posts = new ArrayList<>();
-        int count = 0;
-        for (Post post : postIterable) {
-            if (post.getIsActive() == 1 &&
-                    post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
-                    !post.getTime().after(Calendar.getInstance())) {
-                posts.add(post);
-                count++;
-            }
-        }
+
+        Map<String, Object> map = getVisiblePosts(postIterable);
+        ArrayList<Post> posts = (ArrayList<Post>) map.get("posts");
+        int count = (int) map.get("count");
 
         posts = new ArrayList<>(posts.subList(offset, Math.min(posts.size() - offset, limit)));
         return new PostResponse(count, posts);
@@ -185,16 +159,10 @@ public class ApiPostController {
     @GetMapping("/moderation")
     public Map<String, Object> getPostModeration(int offset, int limit, ModerationStatus moderationStatus, int moderatorId){
         Iterable<Post> postIterable = postRepository.findAllByModerationStatusAndModeratorId(moderationStatus, moderatorId);
-        ArrayList<Post> posts = new ArrayList<>();
-        int count = 0;
-        for (Post post : postIterable) {
-            if (post.getIsActive() == 1 &&
-                    post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
-                    !post.getTime().after(Calendar.getInstance())) {
-                posts.add(post);
-                count++;
-            }
-        }
+
+        Map<String, Object> map = getVisiblePosts(postIterable);
+        ArrayList<Post> posts = (ArrayList<Post>) map.get("posts");
+        int count = (int) map.get("count");
 
         posts = new ArrayList<>(posts.subList(offset, Math.min(posts.size() - offset, limit)));
 
@@ -259,7 +227,7 @@ public class ApiPostController {
     }
 
     @PostMapping
-    public Map<String, Object> addPost(String time, int active, String title , String text, String tags) throws ParseException {
+    public Map<String, Object> addPost(User user, String time, int active, String title , String text, String tags) throws ParseException {
         HashMap<String, Object> model = new HashMap<>();
         HashMap<String, Object> errors = new HashMap<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -293,20 +261,6 @@ public class ApiPostController {
         newPost.setText(text);
         newPost.setModerationStatus(ModerationStatus.NEW);
         newPost.setViewCount(0);
-        User user;
-        if (userRepository.findById(7).isPresent()){
-            user = userRepository.findById(7).get();
-        }
-        else {
-            user = new User();
-            user.setIsModerator(0);
-            user.setRegTime(Calendar.getInstance());
-            user.setName("name");
-            user.setEmail("email@mail.ru");
-            user.setPassword("1234");
-            userRepository.save(user);
-        }
-
         newPost.setUser(user);
 
         ArrayList<Tag> tagList = new ArrayList<>();
@@ -339,6 +293,24 @@ public class ApiPostController {
         newPost.setTags(tagList);
         postRepository.save(newPost);
         model.put("result", true);
+        return model;
+    }
+
+
+    private Map<String, Object> getVisiblePosts(Iterable<Post> postIterable){
+        HashMap<String, Object> model = new HashMap<>();
+        ArrayList<Post> posts = new ArrayList<>();
+        int count = 0;
+        for (Post post : postIterable){
+            if(post.getIsActive() == 1 &&
+                    post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
+                    !post.getTime().after(Calendar.getInstance())){
+                posts.add(post);
+                count++;
+            }
+        }
+        model.put("count", count);
+        model.put("posts", posts);
         return model;
     }
 }
