@@ -1,0 +1,457 @@
+databaseChangeLog:
+  - logicalFilePath: db/changelog/db.changelog-insertTags.yaml
+  - changeSet:
+      id: 1592145865108-1
+      author: devolek (generated)
+      changes:
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 1
+              - column:
+                  name: name
+                  value: lobortis
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 2
+              - column:
+                  name: name
+                  value: dui
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 3
+              - column:
+                  name: name
+                  value: rutrum
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 4
+              - column:
+                  name: name
+                  value: lorem
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 5
+              - column:
+                  name: name
+                  value: id
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 6
+              - column:
+                  name: name
+                  value: nulla
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 7
+              - column:
+                  name: name
+                  value: mattis
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 8
+              - column:
+                  name: name
+                  value: aliquam
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 9
+              - column:
+                  name: name
+                  value: praesent
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 10
+              - column:
+                  name: name
+                  value: fusce
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 11
+              - column:
+                  name: name
+                  value: duis
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 12
+              - column:
+                  name: name
+                  value: maecenas
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 13
+              - column:
+                  name: name
+                  value: auctor
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 14
+              - column:
+                  name: name
+                  value: ipsum
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 15
+              - column:
+                  name: name
+                  value: dapibus
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 16
+              - column:
+                  name: name
+                  value: vestibulum
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 17
+              - column:
+                  name: name
+                  value: sapien
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 18
+              - column:
+                  name: name
+                  value: dui
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 19
+              - column:
+                  name: name
+                  value: est
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 20
+              - column:
+                  name: name
+                  value: pede
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 21
+              - column:
+                  name: name
+                  value: sollicitudin
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 22
+              - column:
+                  name: name
+                  value: nisi
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 23
+              - column:
+                  name: name
+                  value: ante
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 24
+              - column:
+                  name: name
+                  value: eget
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 25
+              - column:
+                  name: name
+                  value: odio
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 26
+              - column:
+                  name: name
+                  value: donec
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 27
+              - column:
+                  name: name
+                  value: pellentesque
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 28
+              - column:
+                  name: name
+                  value: turpis
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 29
+              - column:
+                  name: name
+                  value: vestibulum
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 30
+              - column:
+                  name: name
+                  value: libero
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 31
+              - column:
+                  name: name
+                  value: orci
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 32
+              - column:
+                  name: name
+                  value: praesent
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 33
+              - column:
+                  name: name
+                  value: bibendum
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 34
+              - column:
+                  name: name
+                  value: praesent
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 35
+              - column:
+                  name: name
+                  value: vel
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 36
+              - column:
+                  name: name
+                  value: elementum
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 37
+              - column:
+                  name: name
+                  value: hac
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 38
+              - column:
+                  name: name
+                  value: purus
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 39
+              - column:
+                  name: name
+                  value: neque
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 40
+              - column:
+                  name: name
+                  value: integer
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 41
+              - column:
+                  name: name
+                  value: diam
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 42
+              - column:
+                  name: name
+                  value: libero
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 43
+              - column:
+                  name: name
+                  value: praesent
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 44
+              - column:
+                  name: name
+                  value: augue
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 45
+              - column:
+                  name: name
+                  value: maecenas
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 46
+              - column:
+                  name: name
+                  value: at
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 47
+              - column:
+                  name: name
+                  value: faucibus
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 48
+              - column:
+                  name: name
+                  value: sed
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 49
+              - column:
+                  name: name
+                  value: et
+            tableName: tags
+        - insert:
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 50
+              - column:
+                  name: name
+                  value: felis
+            tableName: tags
+
