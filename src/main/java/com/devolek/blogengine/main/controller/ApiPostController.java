@@ -1,7 +1,8 @@
 package com.devolek.blogengine.main.controller;
 
 
-import com.devolek.blogengine.main.dto.post.response.PostResponse;
+import com.devolek.blogengine.main.dto.post.request.PostListRequest;
+import com.devolek.blogengine.main.dto.post.response.PostResponseDto;
 import com.devolek.blogengine.main.dto.universal.CollectionResponse;
 import com.devolek.blogengine.main.dto.universal.Dto;
 import com.devolek.blogengine.main.dto.user.response.UserDto;
@@ -13,6 +14,7 @@ import com.devolek.blogengine.main.model.User;
 import com.devolek.blogengine.main.repo.PostRepository;
 import com.devolek.blogengine.main.repo.TagRepository;
 import com.devolek.blogengine.main.repo.UserRepository;
+import com.devolek.blogengine.main.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,83 +27,23 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/post")
 public class ApiPostController {
-    @Autowired
-    private PostRepository postRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private TagRepository tagRepository;
+
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final TagRepository tagRepository;
+    private final PostService postService;
+
+    public ApiPostController(PostRepository postRepository, UserRepository userRepository,
+                             TagRepository tagRepository, PostService postService) {
+        this.postRepository = postRepository;
+        this.userRepository = userRepository;
+        this.tagRepository = tagRepository;
+        this.postService = postService;
+    }
 
     @GetMapping
-    public ResponseEntity<?> getPosts(int offset, int limit, String mode) {
-        Iterable<Post> postIterable = postRepository.findAll();
-        Map<String, Object> map = getVisiblePosts(postIterable);
-        ArrayList<Post> posts = (ArrayList<Post>) map.get("posts");
-        int count = (int) map.get("count");
-
-        switch (mode) {
-            case "recent": {
-                posts.sort((o1, o2) -> {
-                    if (o1.getTime().before(o2.getTime())) {
-                        return -1;
-                    }
-                    if (o1.getTime().after(o2.getTime())) {
-                        return 1;
-                    }
-                    return 0;
-                });
-                break;
-            }
-            case "popular": {
-                posts.sort((Comparator.comparingInt(o -> o.getComments().size())));
-                break;
-            }
-            case "best": {
-                posts.sort(((o1, o2) -> {
-                    List<PostVote> o1voters = o1.getPostVotes();
-                    List<PostVote> o2voters = o2.getPostVotes();
-                    int o1Likes = 0;
-                    int o2Likes = 0;
-                    for (PostVote postVote : o1voters) {
-                        if (postVote.getValue() == 1) {
-                            o1Likes++;
-                        }
-                    }
-                    for (PostVote postVote : o2voters) {
-                        if (postVote.getValue() == 1) {
-                            o2Likes++;
-                        }
-                    }
-                    return Integer.compare(o1Likes, o2Likes);
-                }));
-                break;
-            }
-            case "early": {
-                posts.sort((o1, o2) -> {
-                    if (o1.getTime().before(o2.getTime())) {
-                        return 1;
-                    }
-                    if (o1.getTime().after(o2.getTime())) {
-                        return -1;
-                    }
-                    return 0;
-                });
-                break;
-            }
-            default:
-                break;
-        }
-        posts = new ArrayList<>(posts.subList(offset, Math.min(posts.size() - offset, limit)));
-        List<Dto> responses = new ArrayList<>();
-        posts.forEach(post -> {
-            int postLikes = (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 1).count();
-            int postDislikes = (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == -1).count();
-            responses.add(new PostResponse(post.getId(), post.getTime(),
-                    new UserDto(post.getUser().getId(), post.getUser().getName()),
-                    post.getTitle(), post.getText().substring(0, 50), postLikes,
-                    postDislikes, post.getComments().size(), post.getViewCount()));
-        });
-        return ResponseEntity.ok(new CollectionResponse(count, responses));
+    public ResponseEntity<?> getPosts(PostListRequest request) {
+        return ResponseEntity.ok(postService.getPosts(request));
     }
 
     @GetMapping("/search")
@@ -124,7 +66,7 @@ public class ApiPostController {
         posts.forEach(post -> {
             int postLikes = (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 1).count();
             int postDislikes = (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == -1).count();
-            responses.add(new PostResponse(post.getId(), post.getTime(),
+            responses.add(new PostResponseDto(post.getId(), post.getTime(),
                     new UserDto(post.getUser().getId(), post.getUser().getName()),
                     post.getTitle(), post.getText().substring(0, 50), postLikes,
                     postDislikes, post.getComments().size(), post.getViewCount()));
@@ -181,7 +123,7 @@ public class ApiPostController {
         posts.forEach(post -> {
             int postLikes = (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 1).count();
             int postDislikes = (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == -1).count();
-            responses.add(new PostResponse(post.getId(), post.getTime(),
+            responses.add(new PostResponseDto(post.getId(), post.getTime(),
                     new UserDto(post.getUser().getId(), post.getUser().getName()),
                     post.getTitle(), post.getText().substring(0, 50), postLikes,
                     postDislikes, post.getComments().size(), post.getViewCount()));

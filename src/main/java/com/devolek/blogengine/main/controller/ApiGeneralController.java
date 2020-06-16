@@ -1,6 +1,7 @@
 package com.devolek.blogengine.main.controller;
 
 
+import com.devolek.blogengine.main.dto.universal.InfoResponse;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.model.GlobalSetting;
 import com.devolek.blogengine.main.model.Post;
@@ -9,6 +10,7 @@ import com.devolek.blogengine.main.repo.GlobalSettingRepository;
 import com.devolek.blogengine.main.repo.PostRepository;
 import com.devolek.blogengine.main.repo.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,32 +28,25 @@ public class ApiGeneralController {
     private PostRepository postRepository;
 
     @GetMapping("/api/init")
-    public Map<String, Object> getInit(){
-        HashMap<String, Object> model = new HashMap<>();
-        model.put("title", "DevPub");
-        model.put("subtitle", "Рассказы разработчиков");
-        model.put("phone", "+7 965 787-12-34");
-        model.put("email", "mail@mail.ru");
-        model.put("copyright", "Наумов Валентин");
-        model.put("copyrightFrom", "2020");
-        return model;
+    public ResponseEntity<?> getInit() {
+        return ResponseEntity.ok(new InfoResponse());
     }
 
     @GetMapping("/api/settings")
-    public Map<String, Object> getSettings(){
+    public Map<String, Object> getSettings() {
         HashMap<String, Object> model = new HashMap<>();
         Iterable<GlobalSetting> iterable = globalSettingRepository.findAll();
-        for (GlobalSetting globalSetting : iterable){
+        for (GlobalSetting globalSetting : iterable) {
             model.put(globalSetting.getCode(), globalSetting.getValue().equals("YES"));
         }
         return model;
     }
 
     @PutMapping("/api/settings")
-    public void saveSettings(@RequestBody Map<String, Object> model){
-        for (String code : model.keySet()){
+    public void saveSettings(@RequestBody Map<String, Object> model) {
+        for (String code : model.keySet()) {
             Optional<GlobalSetting> setting = globalSettingRepository.findByCode(code);
-            if (setting.isPresent()){
+            if (setting.isPresent()) {
                 GlobalSetting globalSetting = setting.get();
                 globalSetting.setValue(model.get(code).equals(true) ? "YES" : "NO");
                 globalSettingRepository.save(globalSetting);
@@ -60,42 +55,41 @@ public class ApiGeneralController {
     }
 
     @GetMapping("/api/tag")
-    public Map<String, Object> getTags(String query){
+    public Map<String, Object> getTags(String query) {
         ArrayList<Map<String, Object>> tagList = new ArrayList<>();
         HashMap<String, Object> model = new HashMap<>();
 
         Iterable<Tag> tags;
-        if (query == null || query.isEmpty()){
+        if (query == null || query.isEmpty()) {
             tags = tagRepository.findAll();
-        }
-        else {
+        } else {
             tags = tagRepository.findAllByNameStartsWith(query);
         }
 
         Iterable<Post> postIterable = postRepository.findAll();
         int postCount = 0;
-        for (Post post : postIterable){
-            if(post.getIsActive() == 1 &&
+        for (Post post : postIterable) {
+            if (post.getIsActive() == 1 &&
                     post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
-                    !post.getTime().after(Calendar.getInstance())){
+                    !post.getTime().after(Calendar.getInstance())) {
                 postCount++;
             }
         }
-        if (postCount == 0){
+        if (postCount == 0) {
             model.put("tags", tagList);
             return model;
         }
         double maxWeight = 0;
 
-        for (Tag tag : tagRepository.findAll()){
+        for (Tag tag : tagRepository.findAll()) {
             int postWithTag = postRepository.findAllByTagsContains(tag).size();
-            double tagWeight = (double) postWithTag/ (double) postCount;
+            double tagWeight = (double) postWithTag / (double) postCount;
             maxWeight = Math.max(maxWeight, tagWeight);
         }
 
-        for (Tag tag : tags){
+        for (Tag tag : tags) {
             int postWithTag = postRepository.findAllByTagsContains(tag).size();
-            double tagWeight = ((double) postWithTag/(double) postCount)/maxWeight;
+            double tagWeight = ((double) postWithTag / (double) postCount) / maxWeight;
             HashMap<String, Object> tagWithWeight = new HashMap<>();
             tagWithWeight.put("name", tag.getName());
             tagWithWeight.put("weight", tagWeight);

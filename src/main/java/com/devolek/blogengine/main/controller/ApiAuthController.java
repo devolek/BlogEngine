@@ -5,14 +5,9 @@ import com.devolek.blogengine.main.dto.auth.request.SignupRequest;
 import com.devolek.blogengine.main.dto.auth.response.LoginResponse;
 import com.devolek.blogengine.main.dto.captha.response.CaptchaResponse;
 import com.devolek.blogengine.main.dto.universal.ErrorResponse;
-import com.devolek.blogengine.main.dto.universal.OkResponse;
 import com.devolek.blogengine.main.dto.universal.Response;
 import com.devolek.blogengine.main.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,14 +16,12 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/api/auth")
 public class ApiAuthController {
-    @Autowired
-    AuthenticationManager authenticationManager;
 
-    @Autowired
-    PasswordEncoder encoder;
+    private final UserService userService;
 
-    @Autowired
-    UserService userService;
+    public ApiAuthController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestHeader(name = "Cookie") String sessionId,
@@ -57,7 +50,7 @@ public class ApiAuthController {
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader(name = "Cookie") String sessionId){
+    public ResponseEntity<?> logout(@RequestHeader(name = "Cookie") String sessionId) {
         return ResponseEntity.ok(userService.logout(sessionId));
     }
 }
