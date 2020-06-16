@@ -1,6 +1,7 @@
 package com.devolek.blogengine.main.service.impl;
 
 import com.devolek.blogengine.main.dto.post.request.PostListRequest;
+import com.devolek.blogengine.main.dto.post.request.SearchPostRequest;
 import com.devolek.blogengine.main.dto.post.response.PostResponseFactory;
 import com.devolek.blogengine.main.dto.universal.CollectionResponse;
 import com.devolek.blogengine.main.model.Post;
@@ -48,6 +49,14 @@ public class PostServiceImpl implements PostService {
             default:
                 break;
         }
+        return PostResponseFactory.getPostsList(posts, count);
+    }
+
+    @Override
+    public CollectionResponse searchPosts(SearchPostRequest request) {
+        int count = postRepository.searchCount(request.getQuery());
+        int page = request.getOffset() / request.getLimit();
+        List<Post> posts = postRepository.search(request.getQuery(), PageRequest.of(page, request.getLimit()));
         return PostResponseFactory.getPostsList(posts, count);
     }
 

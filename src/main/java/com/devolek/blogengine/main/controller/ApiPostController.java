@@ -2,6 +2,7 @@ package com.devolek.blogengine.main.controller;
 
 
 import com.devolek.blogengine.main.dto.post.request.PostListRequest;
+import com.devolek.blogengine.main.dto.post.request.SearchPostRequest;
 import com.devolek.blogengine.main.dto.post.response.PostResponseDto;
 import com.devolek.blogengine.main.dto.universal.CollectionResponse;
 import com.devolek.blogengine.main.dto.universal.Dto;
@@ -47,31 +48,8 @@ public class ApiPostController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchPost(int offset, int limit, String query) {
-        Iterable<Post> postIterable;
-        if (query != null && !query.isEmpty()) {
-            postIterable = postRepository.findAllByTitleContainingOrTextContaining(query, query);
-        } else {
-            postIterable = postRepository.findAll();
-        }
-
-        Map<String, Object> map = getVisiblePosts(postIterable);
-        ArrayList<Post> posts = (ArrayList<Post>) map.get("posts");
-        int count = (int) map.get("count");
-
-        postIterable.forEach(posts::add);
-        posts = new ArrayList<>(posts.subList(offset, Math.min(posts.size() - offset, limit)));
-
-        List<Dto> responses = new ArrayList<>();
-        posts.forEach(post -> {
-            int postLikes = (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 1).count();
-            int postDislikes = (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == -1).count();
-            responses.add(new PostResponseDto(post.getId(), post.getTime(),
-                    new UserDto(post.getUser().getId(), post.getUser().getName()),
-                    post.getTitle(), post.getText().substring(0, 50), postLikes,
-                    postDislikes, post.getComments().size(), post.getViewCount()));
-        });
-        return ResponseEntity.ok(new CollectionResponse(count, responses));
+    public ResponseEntity<?> searchPost(SearchPostRequest request) {
+        return ResponseEntity.ok(postService.searchPosts(request));
     }
 
     @GetMapping("/{ID}")
