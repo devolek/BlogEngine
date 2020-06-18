@@ -8,12 +8,17 @@ import com.devolek.blogengine.main.dto.universal.OkResponse;
 import com.devolek.blogengine.main.dto.universal.Response;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.model.Post;
+import com.devolek.blogengine.main.model.PostVote;
+import com.devolek.blogengine.main.model.User;
 import com.devolek.blogengine.main.repo.PostRepository;
+import com.devolek.blogengine.main.repo.PostVotesRepository;
 import com.devolek.blogengine.main.service.PostService;
 import com.devolek.blogengine.main.service.TagService;
 import com.devolek.blogengine.main.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -26,11 +31,16 @@ import java.util.List;
 @Service
 @Slf4j
 public class PostServiceImpl implements PostService {
+    private final PostVotesRepository postVotesRepository;
     private final PostRepository postRepository;
     private final UserService userService;
     private final TagService tagService;
 
-    public PostServiceImpl(PostRepository postRepository, UserService userService, TagService tagService) {
+    public PostServiceImpl(PostVotesRepository postVotesRepository,
+                           PostRepository postRepository,
+                           UserService userService,
+                           TagService tagService) {
+        this.postVotesRepository = postVotesRepository;
         this.postRepository = postRepository;
         this.userService = userService;
         this.tagService = tagService;
@@ -74,7 +84,18 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Response getPostById(int id) {
-        Post post = postRepository.getActiveById(id);
+        Post post = postRepository.findById(id).orElse(null);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
+
+        if (currentUserEmail.equals("anonymousUser")){
+            post = postRepository.getActiveById(id);
+        }
+        else if(post != null && post.getUser().equals(userService.findByEmail(currentUserEmail))){
+            return PostResponseFactory.getSinglePost(post);
+        }
+
         if (post == null){
             return new  OkResponse(false);
         }
@@ -171,20 +192,9 @@ public class PostServiceImpl implements PostService {
         Calendar date = Calendar.getInstance();
         date.setTime(sdf.parse(request.getTime()));
 
-        HashMap<String, String> errors = new HashMap<>();
-        if (request.getTitle().isEmpty()) {
-            errors.put("title", "Заголовок не установлен");
-        } else if (request.getTitle().length() < 10) {
-            errors.put("title", "Заголовок слишком короткий");
-        }
-
-        if (request.getText().isEmpty()) {
-            errors.put("text", "Текст публикации не установлен");
-        } else if (request.getText().length() < 500) {
-            errors.put("text", "Текст публикации слишком короткий");
-        }
-        if (errors.size() != 0){
-            return new ErrorResponse(errors);
+        Response error = checkPostRequest(request);
+        if (error != null){
+            return error;
         }
 
         Post newPost = new Post();
@@ -202,5 +212,74 @@ public class PostServiceImpl implements PostService {
         postRepository.save(newPost);
 
         return new OkResponse();
+    }
+
+    @Override
+    public Response likePost(int userId, int postId, int value) {
+        Post post = postRepository.findById(postId).orElse(null);
+        User user = userService.findById(userId);
+        PostVote vote = postVotesRepository.findByUserAndPost(user, post);
+        if (vote != null){
+            if (vote.getValue() == value){
+                return new OkResponse(false);
+            }
+            else postVotesRepository.delete(vote);
+        }
+
+        vote = new PostVote();
+        vote.setPost(post);
+        vote.setUser(user);
+        vote.setTime(Calendar.getInstance());
+        vote.setValue(value);
+        postVotesRepository.save(vote);
+        return new OkResponse();
+    }
+
+    @Override
+    public Response editPost(int userId, int postId, PostAddRequest request) throws ParseException {
+        Post post = postRepository.findById(postId).orElse(null);
+        User user = userService.findById(userId);
+        if (post == null || user == null){
+            return new OkResponse(false);
+        }
+
+        Response error = checkPostRequest(request);
+        if (error != null){
+            return error;
+        }
+
+        if (user.getIsModerator() != 1){
+            post.setModerationStatus(ModerationStatus.NEW);
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        Calendar date = Calendar.getInstance();
+        date.setTime(sdf.parse(request.getTime()));
+
+        post.setTime(date.before(Calendar.getInstance()) ? Calendar.getInstance() : date);
+        post.setIsActive(request.getActive());
+        post.setTitle(request.getTitle());
+        post.setText(request.getText());
+        post.setTags(tagService.getTagsByList(request.getTags()));
+        postRepository.save(post);
+        return new OkResponse();
+    }
+
+    private Response checkPostRequest(PostAddRequest request){
+        HashMap<String, String> errors = new HashMap<>();
+        if (request.getTitle().isEmpty()) {
+            errors.put("title", "Заголовок не установлен");
+        } else if (request.getTitle().length() < 10) {
+            errors.put("title", "Заголовок слишком короткий");
+        }
+
+        if (request.getText().isEmpty()) {
+            errors.put("text", "Текст публикации не установлен");
+        } else if (request.getText().length() < 500) {
+            errors.put("text", "Текст публикации слишком короткий");
+        }
+        if (errors.size() != 0){
+            return new ErrorResponse(errors);
+        }
+        return null;
     }
 }

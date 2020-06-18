@@ -22,4 +22,8 @@ public interface PostService {
     CollectionResponse getMyPosts(PostModerationRequest request, int userId);
 
     Response addPost(PostAddRequest request, int userId) throws ParseException;
+
+    Response likePost(int userId, int postId, int value);
+
+    Response editPost(int userId, int postId, PostAddRequest request) throws ParseException;
 }

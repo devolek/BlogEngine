@@ -8,6 +8,7 @@ import com.devolek.blogengine.main.security.UserDetailsImpl;
 import com.devolek.blogengine.main.service.PostService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -70,5 +71,22 @@ public class ApiPostController {
         return ResponseEntity.ok(postService.addPost(request, userDetails.getId()));
     }
 
+    @PostMapping("/like")
+    public ResponseEntity<?> likePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                      @RequestBody LikeRequest request){
+        return ResponseEntity.ok(postService.likePost(userDetails.getId(), request.getPostId(), 1));
+    }
 
+    @PostMapping("/dislike")
+    public ResponseEntity<?> dislikePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                      @RequestBody LikeRequest request){
+        return ResponseEntity.ok(postService.likePost(userDetails.getId(), request.getPostId(), -1));
+    }
+
+    @PutMapping("/{ID}")
+    public ResponseEntity<?> editPost(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                      @RequestBody PostAddRequest request,
+                                      @PathVariable int ID) throws ParseException {
+        return ResponseEntity.ok(postService.editPost(userDetails.getId(), ID, request));
+    }
 }
