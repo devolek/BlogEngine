@@ -10,7 +10,7 @@ import java.util.Calendar;
 @Table(name = "captcha_codes")
 public class CaptchaCode {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id; //id каптча
 
     @Column(nullable = false)

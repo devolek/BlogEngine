@@ -10,7 +10,7 @@ import java.util.Calendar;
 @Table(name = "post_comments")
 public class PostComment {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id; //id комментария
 
     @ManyToOne(cascade = CascadeType.ALL)

@@ -11,7 +11,7 @@ import java.util.Calendar;
 public class PostVote {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id; //id лайка/дизлайка
 
     @ManyToOne

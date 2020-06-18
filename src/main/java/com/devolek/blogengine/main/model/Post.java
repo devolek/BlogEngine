@@ -13,7 +13,7 @@ import java.util.List;
 public class Post {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id; //id поста
 
     @Column(name = "is_active", nullable = false, columnDefinition = "TINYINT")

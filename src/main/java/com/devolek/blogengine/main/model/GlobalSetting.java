@@ -9,7 +9,7 @@ import javax.persistence.*;
 @Table(name = "global_settings")
 public class GlobalSetting {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id; //id настройки
 
     @Column(nullable = false)

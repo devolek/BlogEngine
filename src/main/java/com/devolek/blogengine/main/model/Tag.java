@@ -10,7 +10,7 @@ import javax.persistence.*;
 public class Tag {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id; //id тэга
 
     @Column(nullable = false)
