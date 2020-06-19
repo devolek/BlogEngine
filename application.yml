@@ -7,4 +7,4 @@ bezkoder.app.jwtSecret: bezKoderSecretKey
 bezkoder.app.jwtExpirationMs: 86400000
 
 upload:
-  path: "C:/Users/Katerina/Desktop/storage"
+  path: "C:/Users/Valet/Desktop/storage"

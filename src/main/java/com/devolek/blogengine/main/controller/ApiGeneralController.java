@@ -9,17 +9,18 @@ import com.devolek.blogengine.main.model.Tag;
 import com.devolek.blogengine.main.repo.GlobalSettingRepository;
 import com.devolek.blogengine.main.repo.PostRepository;
 import com.devolek.blogengine.main.repo.TagRepository;
+import com.devolek.blogengine.main.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @RestController
 public class ApiGeneralController {
+    private final ImageService imageService;
     @Autowired
     private GlobalSettingRepository globalSettingRepository;
     @Autowired
@@ -27,9 +28,18 @@ public class ApiGeneralController {
     @Autowired
     private PostRepository postRepository;
 
+    public ApiGeneralController(ImageService imageService) {
+        this.imageService = imageService;
+    }
+
     @GetMapping("/api/init")
     public ResponseEntity<?> getInit() {
         return ResponseEntity.ok(new InfoResponse());
+    }
+
+    @PostMapping("/api/image")
+    public ResponseEntity<?> saveImage(MultipartFile image) throws IOException {
+        return ResponseEntity.ok(imageService.saveImage(image));
     }
 
     @GetMapping("/api/settings")
