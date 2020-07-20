@@ -3,10 +3,13 @@ package com.devolek.blogengine.main.service;
 import com.devolek.blogengine.main.dto.post.request.*;
 import com.devolek.blogengine.main.dto.universal.CollectionResponse;
 import com.devolek.blogengine.main.dto.universal.Response;
+import com.devolek.blogengine.main.model.Post;
 
 import java.text.ParseException;
 
 public interface PostService {
+    Post findPostById(int id);
+
     CollectionResponse getPosts(PostListRequest request);
 
     CollectionResponse searchPosts(SearchPostRequest request);

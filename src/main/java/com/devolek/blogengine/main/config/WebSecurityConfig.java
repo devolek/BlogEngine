@@ -14,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
-@EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -44,7 +43,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/img/**", "/js/**", "/imgs/**", "/fonts/**",
                         "/api/post/**", "/favicon.ico", "/api/init",
                         "/api/settings", "/api/tag").permitAll()
-                .antMatchers("/api/post/my", "/api/image").hasRole("USER")
+                .antMatchers("/api/post/my", "/api/image", "/api/comment").hasRole("USER")
                 .antMatchers("/api/post/moderation").hasRole("MODERATOR")
                 //Все остальные страницы требуют аутентификации
                 .anyRequest().authenticated();

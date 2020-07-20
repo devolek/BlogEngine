@@ -1,6 +1,7 @@
 package com.devolek.blogengine.main.controller;
 
 
+import com.devolek.blogengine.main.dto.comments.request.AddCommentRequest;
 import com.devolek.blogengine.main.dto.universal.InfoResponse;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.model.GlobalSetting;
@@ -9,9 +10,11 @@ import com.devolek.blogengine.main.model.Tag;
 import com.devolek.blogengine.main.repo.GlobalSettingRepository;
 import com.devolek.blogengine.main.repo.PostRepository;
 import com.devolek.blogengine.main.repo.TagRepository;
+import com.devolek.blogengine.main.security.UserDetailsImpl;
+import com.devolek.blogengine.main.service.CommentService;
 import com.devolek.blogengine.main.service.ImageService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,15 +24,21 @@ import java.util.*;
 @RestController
 public class ApiGeneralController {
     private final ImageService imageService;
-    @Autowired
-    private GlobalSettingRepository globalSettingRepository;
-    @Autowired
-    private TagRepository tagRepository;
-    @Autowired
-    private PostRepository postRepository;
+    private final CommentService commentService;
+    private final GlobalSettingRepository globalSettingRepository;
+    private final TagRepository tagRepository;
+    private final PostRepository postRepository;
 
-    public ApiGeneralController(ImageService imageService) {
+    public ApiGeneralController(ImageService imageService,
+                                CommentService commentService,
+                                GlobalSettingRepository globalSettingRepository,
+                                TagRepository tagRepository,
+                                PostRepository postRepository) {
         this.imageService = imageService;
+        this.commentService = commentService;
+        this.globalSettingRepository = globalSettingRepository;
+        this.tagRepository = tagRepository;
+        this.postRepository = postRepository;
     }
 
     @GetMapping("/api/init")
@@ -41,6 +50,14 @@ public class ApiGeneralController {
     public ResponseEntity<?> saveImage(MultipartFile image) throws IOException {
         return ResponseEntity.ok(imageService.saveImage(image));
     }
+
+    @PostMapping("/api/comment")
+    public ResponseEntity<?> addComment(@AuthenticationPrincipal UserDetailsImpl user,
+                                        @RequestBody AddCommentRequest request) {
+        return ResponseEntity.ok(commentService.addComment(user.getEmail(), request));
+    }
+
+
 
     @GetMapping("/api/settings")
     public Map<String, Object> getSettings() {

@@ -297,7 +297,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: role
-                  type: ENUM("USER", "MODERATOR")
+                  type: ENUM("ROLE_USER", "ROLE_MODERATOR")
                   constraints:
                     nullable: false
         - createTable:
@@ -329,10 +329,10 @@ databaseChangeLog:
             columns:
               - column:
                   name: role
-                  value: "USER"
+                  value: "ROLE_USER"
         - insert:
             tableName: roles
             columns:
               - column:
                   name: role
-                  value: "MODERATOR"
+                  value: "ROLE_MODERATOR"

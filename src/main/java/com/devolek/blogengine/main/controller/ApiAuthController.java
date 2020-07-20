@@ -45,7 +45,7 @@ public class ApiAuthController {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<?> checkAuth(@RequestHeader(name = "Cookie") String sessionId, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<?> checkAuth(@RequestHeader(name = "Cookie", required = false) String sessionId, HttpServletRequest httpServletRequest) {
         return ResponseEntity.ok(userService.checkAuth(httpServletRequest, sessionId));
     }
 

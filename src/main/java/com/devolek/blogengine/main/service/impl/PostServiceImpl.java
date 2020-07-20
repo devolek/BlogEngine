@@ -47,6 +47,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public Post findPostById(int id) {
+        return postRepository.findById(id).orElse(null);
+    }
+
+    @Override
     public CollectionResponse getPosts(PostListRequest request) {
         int count = postRepository.getAvailablePostCount();
         int page = request.getOffset() / request.getLimit();

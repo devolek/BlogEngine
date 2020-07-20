@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
         user.setName(signUpRequest.getName());
         user.setEmail(signUpRequest.getEmail());
         user.setPassword(signUpRequest.getPassword());
-        Role roleUser = roleRepository.findByRole(ERole.USER);
+        Role roleUser = roleRepository.findByRole(ERole.ROLE_USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setPhoto("/default-1.png");
         user.setRoles(Collections.singleton(roleUser));
@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Response checkAuth(HttpServletRequest httpServletRequest, String sessionId){
-        if (!session.containsKey(sessionId)){
+        if (sessionId == null || !session.containsKey(sessionId)){
             return new OkResponse(false);
         }
         Principal principal = httpServletRequest.getUserPrincipal();
