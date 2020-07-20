@@ -52,7 +52,7 @@ public class Post {
     private List<PostVote> postVotes;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "Tag2Post",
+    @JoinTable(name = "tag2Post",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<Tag> tags;

@@ -1,7 +1,7 @@
 package com.devolek.blogengine.main.service.impl;
 
-import com.devolek.blogengine.main.dto.post.request.*;
 import com.devolek.blogengine.main.dto.post.PostResponseFactory;
+import com.devolek.blogengine.main.dto.post.request.*;
 import com.devolek.blogengine.main.dto.universal.CollectionResponse;
 import com.devolek.blogengine.main.dto.universal.ErrorResponse;
 import com.devolek.blogengine.main.dto.universal.OkResponse;
@@ -9,11 +9,12 @@ import com.devolek.blogengine.main.dto.universal.Response;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.PostVote;
+import com.devolek.blogengine.main.model.Tag;
 import com.devolek.blogengine.main.model.User;
 import com.devolek.blogengine.main.repo.PostRepository;
 import com.devolek.blogengine.main.repo.PostVotesRepository;
+import com.devolek.blogengine.main.repo.TagRepository;
 import com.devolek.blogengine.main.service.PostService;
-import com.devolek.blogengine.main.service.TagService;
 import com.devolek.blogengine.main.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -34,16 +35,16 @@ public class PostServiceImpl implements PostService {
     private final PostVotesRepository postVotesRepository;
     private final PostRepository postRepository;
     private final UserService userService;
-    private final TagService tagService;
+    private final TagRepository tagRepository;
 
     public PostServiceImpl(PostVotesRepository postVotesRepository,
                            PostRepository postRepository,
                            UserService userService,
-                           TagService tagService) {
+                           TagRepository tagRepository) {
         this.postVotesRepository = postVotesRepository;
         this.postRepository = postRepository;
         this.userService = userService;
-        this.tagService = tagService;
+        this.tagRepository = tagRepository;
     }
 
     @Override
@@ -94,15 +95,14 @@ public class PostServiceImpl implements PostService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentUserEmail = authentication.getName();
 
-        if (currentUserEmail.equals("anonymousUser")){
+        if (currentUserEmail.equals("anonymousUser")) {
             post = postRepository.getActiveById(id);
-        }
-        else if(post != null && post.getUser().equals(userService.findByEmail(currentUserEmail))){
+        } else if (post != null && post.getUser().equals(userService.findByEmail(currentUserEmail))) {
             return PostResponseFactory.getSinglePost(post);
         }
 
-        if (post == null){
-            return new  OkResponse(false);
+        if (post == null) {
+            return new OkResponse(false);
         }
         return PostResponseFactory.getSinglePost(post);
     }
@@ -118,7 +118,7 @@ public class PostServiceImpl implements PostService {
         dateTo.add(Calendar.DAY_OF_MONTH, 1);
 
         int page = request.getOffset() / request.getLimit();
-        int count = postRepository.getCountByDate(dateFrom,dateTo);
+        int count = postRepository.getCountByDate(dateFrom, dateTo);
         List<Post> posts = postRepository.getByDate(dateFrom, dateTo, PageRequest.of(page, request.getLimit()));
         return PostResponseFactory.getPostsList(posts, count);
     }
@@ -135,17 +135,17 @@ public class PostServiceImpl implements PostService {
     public CollectionResponse getPostsModeration(PostModerationRequest request, int moderatorId) {
         ModerationStatus status = ModerationStatus.NEW;
         Integer moderator = null;
-        switch (request.getStatus()){
-            case "new":{
+        switch (request.getStatus()) {
+            case "new": {
                 status = ModerationStatus.NEW;
                 break;
             }
-            case "declined":{
+            case "declined": {
                 status = ModerationStatus.DECLINED;
                 moderator = moderatorId;
                 break;
             }
-            case "accepted":{
+            case "accepted": {
                 status = ModerationStatus.ACCEPTED;
                 moderator = moderatorId;
                 break;
@@ -163,19 +163,19 @@ public class PostServiceImpl implements PostService {
     public CollectionResponse getMyPosts(PostModerationRequest request, int userId) {
         ModerationStatus status = ModerationStatus.NEW;
         int isActive = 1;
-        switch (request.getStatus()){
+        switch (request.getStatus()) {
             case "inactive": {
                 isActive = 0;
                 status = null;
             }
-            case "pending":{
+            case "pending": {
                 break;
             }
-            case "declined":{
+            case "declined": {
                 status = ModerationStatus.DECLINED;
                 break;
             }
-            case "published":{
+            case "published": {
                 status = ModerationStatus.ACCEPTED;
                 break;
             }
@@ -198,7 +198,7 @@ public class PostServiceImpl implements PostService {
         date.setTime(sdf.parse(request.getTime()));
 
         Response error = checkPostRequest(request);
-        if (error != null){
+        if (error != null) {
             return error;
         }
 
@@ -212,7 +212,7 @@ public class PostServiceImpl implements PostService {
         newPost.setUser(userService.findById(userId));
         newPost.setComments(new ArrayList<>());
         newPost.setPostVotes(new ArrayList<>());
-        newPost.setTags(tagService.getTagsByList(request.getTags()));
+        newPost.setTags(getTagsByList(request.getTags()));
 
         postRepository.save(newPost);
 
@@ -224,11 +224,10 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId).orElse(null);
         User user = userService.findById(userId);
         PostVote vote = postVotesRepository.findByUserAndPost(user, post);
-        if (vote != null){
-            if (vote.getValue() == value){
+        if (vote != null) {
+            if (vote.getValue() == value) {
                 return new OkResponse(false);
-            }
-            else postVotesRepository.delete(vote);
+            } else postVotesRepository.delete(vote);
         }
 
         vote = new PostVote();
@@ -244,16 +243,16 @@ public class PostServiceImpl implements PostService {
     public Response editPost(int userId, int postId, PostAddRequest request) throws ParseException {
         Post post = postRepository.findById(postId).orElse(null);
         User user = userService.findById(userId);
-        if (post == null || user == null){
+        if (post == null || user == null) {
             return new OkResponse(false);
         }
 
         Response error = checkPostRequest(request);
-        if (error != null){
+        if (error != null) {
             return error;
         }
 
-        if (user.getIsModerator() != 1){
+        if (user.getIsModerator() != 1) {
             post.setModerationStatus(ModerationStatus.NEW);
         }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -264,12 +263,21 @@ public class PostServiceImpl implements PostService {
         post.setIsActive(request.getActive());
         post.setTitle(request.getTitle());
         post.setText(request.getText());
-        post.setTags(tagService.getTagsByList(request.getTags()));
+        post.setTags(getTagsByList(request.getTags()));
         postRepository.save(post);
         return new OkResponse();
     }
 
-    private Response checkPostRequest(PostAddRequest request){
+    @Override
+    public int getPostCountWithTag(Tag tag) {
+        return postRepository.getCountByTag(tag.getName());
+    }
+
+    public int countAvailablePosts() {
+        return postRepository.getAvailablePostCount();
+    }
+
+    private Response checkPostRequest(PostAddRequest request) {
         HashMap<String, String> errors = new HashMap<>();
         if (request.getTitle().isEmpty()) {
             errors.put("title", "Заголовок не установлен");
@@ -282,9 +290,26 @@ public class PostServiceImpl implements PostService {
         } else if (request.getText().length() < 500) {
             errors.put("text", "Текст публикации слишком короткий");
         }
-        if (errors.size() != 0){
+        if (errors.size() != 0) {
             return new ErrorResponse(errors);
         }
         return null;
+    }
+
+    public List<Tag> getTagsByList(List<String> tags) {
+        List<Tag> tagList = new ArrayList<>();
+        if (tags.size() != 0) {            //если тегов нет в запросе, блок пропускается
+            tags.forEach(tag -> {
+                Tag postTag;
+                if (tagRepository.existsByNameIgnoreCase(tag)) {
+                    postTag = tagRepository.findFirstByNameIgnoreCase(tag);
+                } else {
+                    postTag = new Tag();
+                    postTag.setName(tag);
+                }
+                tagList.add(postTag);
+            });
+        }
+        return tagList;
     }
 }

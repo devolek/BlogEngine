@@ -146,7 +146,7 @@ databaseChangeLog:
                   valueNumeric: 16
               - column:
                   name: name
-                  value: vestibulum
+                  value: vestibulums
             tableName: tags
         - insert:
             columns:
@@ -164,7 +164,7 @@ databaseChangeLog:
                   valueNumeric: 18
               - column:
                   name: name
-                  value: dui
+                  value: duic
             tableName: tags
         - insert:
             columns:
@@ -290,7 +290,7 @@ databaseChangeLog:
                   valueNumeric: 32
               - column:
                   name: name
-                  value: praesent
+                  value: praesentd
             tableName: tags
         - insert:
             columns:
@@ -308,7 +308,7 @@ databaseChangeLog:
                   valueNumeric: 34
               - column:
                   name: name
-                  value: praesent
+                  value: praesents
             tableName: tags
         - insert:
             columns:
@@ -380,7 +380,7 @@ databaseChangeLog:
                   valueNumeric: 42
               - column:
                   name: name
-                  value: libero
+                  value: liberoc
             tableName: tags
         - insert:
             columns:
@@ -389,7 +389,7 @@ databaseChangeLog:
                   valueNumeric: 43
               - column:
                   name: name
-                  value: praesent
+                  value: praesenta
             tableName: tags
         - insert:
             columns:
@@ -407,7 +407,7 @@ databaseChangeLog:
                   valueNumeric: 45
               - column:
                   name: name
-                  value: maecenas
+                  value: maecenasc
             tableName: tags
         - insert:
             columns:

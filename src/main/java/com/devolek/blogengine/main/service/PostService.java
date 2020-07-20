@@ -4,8 +4,10 @@ import com.devolek.blogengine.main.dto.post.request.*;
 import com.devolek.blogengine.main.dto.universal.CollectionResponse;
 import com.devolek.blogengine.main.dto.universal.Response;
 import com.devolek.blogengine.main.model.Post;
+import com.devolek.blogengine.main.model.Tag;
 
 import java.text.ParseException;
+import java.util.List;
 
 public interface PostService {
     Post findPostById(int id);
@@ -29,4 +31,10 @@ public interface PostService {
     Response likePost(int userId, int postId, int value);
 
     Response editPost(int userId, int postId, PostAddRequest request) throws ParseException;
+
+    int getPostCountWithTag(Tag tag);
+
+    int countAvailablePosts();
+
+    List<Tag> getTagsByList(List<String> tags);
 }

@@ -3,16 +3,12 @@ package com.devolek.blogengine.main.controller;
 
 import com.devolek.blogengine.main.dto.comments.request.AddCommentRequest;
 import com.devolek.blogengine.main.dto.universal.InfoResponse;
-import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.model.GlobalSetting;
-import com.devolek.blogengine.main.model.Post;
-import com.devolek.blogengine.main.model.Tag;
 import com.devolek.blogengine.main.repo.GlobalSettingRepository;
-import com.devolek.blogengine.main.repo.PostRepository;
-import com.devolek.blogengine.main.repo.TagRepository;
 import com.devolek.blogengine.main.security.UserDetailsImpl;
 import com.devolek.blogengine.main.service.CommentService;
 import com.devolek.blogengine.main.service.ImageService;
+import com.devolek.blogengine.main.service.TagService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -26,19 +22,15 @@ public class ApiGeneralController {
     private final ImageService imageService;
     private final CommentService commentService;
     private final GlobalSettingRepository globalSettingRepository;
-    private final TagRepository tagRepository;
-    private final PostRepository postRepository;
+    private final TagService tagService;
 
     public ApiGeneralController(ImageService imageService,
                                 CommentService commentService,
-                                GlobalSettingRepository globalSettingRepository,
-                                TagRepository tagRepository,
-                                PostRepository postRepository) {
+                                GlobalSettingRepository globalSettingRepository, TagService tagService) {
         this.imageService = imageService;
         this.commentService = commentService;
         this.globalSettingRepository = globalSettingRepository;
-        this.tagRepository = tagRepository;
-        this.postRepository = postRepository;
+        this.tagService = tagService;
     }
 
     @GetMapping("/api/init")
@@ -82,48 +74,8 @@ public class ApiGeneralController {
     }
 
     @GetMapping("/api/tag")
-    public Map<String, Object> getTags(String query) {
-        ArrayList<Map<String, Object>> tagList = new ArrayList<>();
-        HashMap<String, Object> model = new HashMap<>();
-
-        Iterable<Tag> tags;
-        if (query == null || query.isEmpty()) {
-            tags = tagRepository.findAll();
-        } else {
-            tags = tagRepository.findAllByNameStartsWith(query);
-        }
-
-        Iterable<Post> postIterable = postRepository.findAll();
-        int postCount = 0;
-        for (Post post : postIterable) {
-            if (post.getIsActive() == 1 &&
-                    post.getModerationStatus().equals(ModerationStatus.ACCEPTED) &&
-                    !post.getTime().after(Calendar.getInstance())) {
-                postCount++;
-            }
-        }
-        if (postCount == 0) {
-            model.put("tags", tagList);
-            return model;
-        }
-        double maxWeight = 0;
-
-        for (Tag tag : tagRepository.findAll()) {
-            int postWithTag = postRepository.findAllByTagsContains(tag).size();
-            double tagWeight = (double) postWithTag / (double) postCount;
-            maxWeight = Math.max(maxWeight, tagWeight);
-        }
-
-        for (Tag tag : tags) {
-            int postWithTag = postRepository.findAllByTagsContains(tag).size();
-            double tagWeight = ((double) postWithTag / (double) postCount) / maxWeight;
-            HashMap<String, Object> tagWithWeight = new HashMap<>();
-            tagWithWeight.put("name", tag.getName());
-            tagWithWeight.put("weight", tagWeight);
-            tagList.add(tagWithWeight);
-        }
-        model.put("tags", tagList);
-        return model;
+    public ResponseEntity<?> getTags(String query) {
+        return ResponseEntity.ok(tagService.getTagList(query));
     }
 
 }

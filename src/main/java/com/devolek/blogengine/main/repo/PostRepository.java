@@ -87,10 +87,8 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
 
     @Query(value = "select count(p) from Post p join p.tags t where " +
             defaultCondition +
-            " and t.name = :tag " +
-            "group by p " +
-            "order by p.time desc")
-    int getCountByTag(@Param("tag") String tag);
+            " and t.name = :tag")
+    Integer getCountByTag(@Param("tag") String tag);
 
     @Query(value = "select p from Post p join p.tags t where " +
             defaultCondition +

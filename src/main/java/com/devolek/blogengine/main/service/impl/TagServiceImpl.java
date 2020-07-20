@@ -1,38 +1,52 @@
 package com.devolek.blogengine.main.service.impl;
 
+import com.devolek.blogengine.main.dto.tag.TagResponseFactory;
+import com.devolek.blogengine.main.dto.tag.response.TagResponse;
+import com.devolek.blogengine.main.dto.universal.CollectionResponse;
+import com.devolek.blogengine.main.dto.universal.Dto;
+import com.devolek.blogengine.main.dto.universal.Response;
+import com.devolek.blogengine.main.enums.ModerationStatus;
+import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.Tag;
 import com.devolek.blogengine.main.repo.TagRepository;
+import com.devolek.blogengine.main.service.PostService;
 import com.devolek.blogengine.main.service.TagService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Slf4j
 public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
+    private final PostService postService;
 
-    public TagServiceImpl(TagRepository tagRepository) {
+    public TagServiceImpl(TagRepository tagRepository, PostService postService) {
         this.tagRepository = tagRepository;
+        this.postService = postService;
     }
 
     @Override
-    public List<Tag> getTagsByList(List<String> tags) {
-        List<Tag> tagList = new ArrayList<>();
-        if (tags.size() != 0) {            //если тегов нет в запросе, блок пропускается
-            tags.forEach(tag -> {
-                Tag postTag;
-                if (tagRepository.existsByNameIgnoreCase(tag)) {
-                    postTag = tagRepository.findFirstByNameIgnoreCase(tag);
-                } else {
-                    postTag = new Tag();
-                    postTag.setName(tag);
-                }
-                tagList.add(postTag);
-            });
+    public Response getTagList(String query) {
+        List<Tag> tags = tagRepository.getAllTagsWithQuery(query);
+        if (tags == null){
+            return new CollectionResponse(0, new ArrayList<>());
         }
-        return tagList;
+        List<Dto> tagList = new ArrayList<>();
+        int allPost = postService.countAvailablePosts();
+        double maxWeight = 0;
+        for (Tag tag : tags) {
+            int postCountWithTag = postService.getPostCountWithTag(tag);
+            double tagWeight = ((double) postCountWithTag / (double) allPost);
+            maxWeight = Math.max(maxWeight, tagWeight);
+        }
+        for (Tag tag : tags){
+            int postCountWithTag = postService.getPostCountWithTag(tag);
+            double tagWeight = ((double) postCountWithTag / (double) allPost) / maxWeight;
+            tagList.add(TagResponseFactory.tagToDto(tag, tagWeight));
+        }
+
+        return TagResponseFactory.getTagResponseList(tagList);
     }
 }
