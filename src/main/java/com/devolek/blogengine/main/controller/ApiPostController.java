@@ -8,7 +8,6 @@ import com.devolek.blogengine.main.security.UserDetailsImpl;
 import com.devolek.blogengine.main.service.PostService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,6 +58,12 @@ public class ApiPostController {
         return ResponseEntity.ok(postService.getPostsModeration(request, userDetails.getId()));
     }
 
+    @PostMapping("/moderation")
+    public ResponseEntity<?> addPostModeration(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                               AddModerationRequest request) {
+        return ResponseEntity.ok(postService.addPostDecision(request, userDetails.getId()));
+    }
+
     @GetMapping("/my")
     public ResponseEntity<?> getMyPosts(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                         PostModerationRequest request) {
@@ -73,13 +78,13 @@ public class ApiPostController {
 
     @PostMapping("/like")
     public ResponseEntity<?> likePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                      @RequestBody LikeRequest request){
+                                      @RequestBody LikeRequest request) {
         return ResponseEntity.ok(postService.likePost(userDetails.getId(), request.getPostId(), 1));
     }
 
     @PostMapping("/dislike")
     public ResponseEntity<?> dislikePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                      @RequestBody LikeRequest request){
+                                         @RequestBody LikeRequest request) {
         return ResponseEntity.ok(postService.likePost(userDetails.getId(), request.getPostId(), -1));
     }
 

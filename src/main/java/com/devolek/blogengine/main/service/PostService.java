@@ -32,6 +32,8 @@ public interface PostService {
 
     Response editPost(int userId, int postId, PostAddRequest request) throws ParseException;
 
+    Response addPostDecision(AddModerationRequest request, int userId);
+
     int getPostCountWithTag(Tag tag);
 
     int countAvailablePosts();

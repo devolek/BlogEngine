@@ -2,10 +2,7 @@ package com.devolek.blogengine.main.service.impl;
 
 import com.devolek.blogengine.main.dto.post.PostResponseFactory;
 import com.devolek.blogengine.main.dto.post.request.*;
-import com.devolek.blogengine.main.dto.universal.CollectionResponse;
-import com.devolek.blogengine.main.dto.universal.ErrorResponse;
-import com.devolek.blogengine.main.dto.universal.OkResponse;
-import com.devolek.blogengine.main.dto.universal.Response;
+import com.devolek.blogengine.main.dto.universal.*;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.PostVote;
@@ -294,6 +291,17 @@ public class PostServiceImpl implements PostService {
             return new ErrorResponse(errors);
         }
         return null;
+    }
+
+    @Override
+    public Response addPostDecision(AddModerationRequest request, int userId) {
+        Post post = findPostById(request.getPostId());
+        if (post == null){
+            return new FalseResponse();
+        }
+        post.setModeratorId(userId);
+        post.setModerationStatus(request.getDecision());
+        return new OkResponse();
     }
 
     public List<Tag> getTagsByList(List<String> tags) {
