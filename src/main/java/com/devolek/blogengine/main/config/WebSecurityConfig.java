@@ -42,7 +42,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/auth/**", "/", "/static/**", "/css/**",
                         "/img/**", "/js/**", "/imgs/**", "/fonts/**",
                         "/api/post/**", "/favicon.ico", "/api/init",
-                        "/api/settings", "/api/tag").permitAll()
+                        "/api/settings", "/api/tag", "/api/calendar").permitAll()
                 .antMatchers("/api/post/my", "/api/image", "/api/comment").hasRole("USER")
                 .antMatchers("/api/post/moderation").hasRole("MODERATOR")
                 //Все остальные страницы требуют аутентификации

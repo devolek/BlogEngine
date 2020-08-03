@@ -43,8 +43,8 @@ public class ApiPostController {
     }
 
     @GetMapping("/byDate")
-    public ResponseEntity<?> getPostByDate(@RequestBody PostByDateRequest request) throws ParseException {
-        return ResponseEntity.ok(postService.getPostsByDate(request));
+    public ResponseEntity<?> getPostByDate(int offset, int limit, String date) throws ParseException {
+        return ResponseEntity.ok(postService.getPostsByDate(offset, limit, date));
     }
 
     @GetMapping("/byTag")

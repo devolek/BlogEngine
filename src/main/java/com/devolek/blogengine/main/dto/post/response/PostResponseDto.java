@@ -9,7 +9,7 @@ import java.util.Calendar;
 @Data
 public class PostResponseDto implements Dto {
     private int id;
-    @JsonFormat(pattern = "MMM d, HH:mm")
+    @JsonFormat(pattern = "MMM d, HH:mm", timezone = "Europe/Moscow")
     private Calendar time;
     private Dto user;
     private String title;

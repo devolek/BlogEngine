@@ -8,6 +8,7 @@ import com.devolek.blogengine.main.repo.GlobalSettingRepository;
 import com.devolek.blogengine.main.security.UserDetailsImpl;
 import com.devolek.blogengine.main.service.CommentService;
 import com.devolek.blogengine.main.service.ImageService;
+import com.devolek.blogengine.main.service.PostService;
 import com.devolek.blogengine.main.service.TagService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,14 +24,16 @@ public class ApiGeneralController {
     private final CommentService commentService;
     private final GlobalSettingRepository globalSettingRepository;
     private final TagService tagService;
+    private final PostService postService;
 
     public ApiGeneralController(ImageService imageService,
                                 CommentService commentService,
-                                GlobalSettingRepository globalSettingRepository, TagService tagService) {
+                                GlobalSettingRepository globalSettingRepository, TagService tagService, PostService postService) {
         this.imageService = imageService;
         this.commentService = commentService;
         this.globalSettingRepository = globalSettingRepository;
         this.tagService = tagService;
+        this.postService = postService;
     }
 
     @GetMapping("/api/init")
@@ -76,6 +79,11 @@ public class ApiGeneralController {
     @GetMapping("/api/tag")
     public ResponseEntity<?> getTags(String query) {
         return ResponseEntity.ok(tagService.getTagList(query));
+    }
+
+    @GetMapping("/api/calendar")
+    public ResponseEntity<?> getCalendar(Integer year) {
+        return ResponseEntity.ok(postService.getCalendar(year));
     }
 
 }

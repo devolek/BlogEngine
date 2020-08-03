@@ -2,6 +2,7 @@ package com.devolek.blogengine.main.service.impl;
 
 import com.devolek.blogengine.main.dto.post.PostResponseFactory;
 import com.devolek.blogengine.main.dto.post.request.*;
+import com.devolek.blogengine.main.dto.post.response.PostCalendarResponse;
 import com.devolek.blogengine.main.dto.universal.*;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.model.Post;
@@ -21,10 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -105,18 +103,18 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public CollectionResponse getPostsByDate(PostByDateRequest request) throws ParseException {
+    public CollectionResponse getPostsByDate(int offset, int limit, String date) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar dateFrom = Calendar.getInstance();
         Calendar dateTo = Calendar.getInstance();
-        dateFrom.setTime(sdf.parse(request.getDate()));
+        dateFrom.setTime(sdf.parse(date));
         dateFrom.add(Calendar.DAY_OF_MONTH, -1);
-        dateTo.setTime(sdf.parse(request.getDate()));
+        dateTo.setTime(sdf.parse(date));
         dateTo.add(Calendar.DAY_OF_MONTH, 1);
 
-        int page = request.getOffset() / request.getLimit();
+        int page = offset / limit;
         int count = postRepository.getCountByDate(dateFrom, dateTo);
-        List<Post> posts = postRepository.getByDate(dateFrom, dateTo, PageRequest.of(page, request.getLimit()));
+        List<Post> posts = postRepository.getByDate(dateFrom, dateTo, PageRequest.of(page, limit));
         return PostResponseFactory.getPostsList(posts, count);
     }
 
@@ -302,6 +300,40 @@ public class PostServiceImpl implements PostService {
         post.setModeratorId(userId);
         post.setModerationStatus(request.getDecision());
         return new OkResponse();
+    }
+
+    @Override
+    public Response getCalendar(Integer year) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar now = Calendar.getInstance();
+        Calendar before = Calendar.getInstance();
+        Calendar after = Calendar.getInstance();
+        before.set(now.get(Calendar.YEAR) - 1, Calendar.DECEMBER, 31);
+        after.set(now.get(Calendar.YEAR) + 1, Calendar.JANUARY, 1);
+
+        if (year != null && now.get(Calendar.YEAR) >= year){
+            before.set(Calendar.YEAR, year - 1);
+            after.set(Calendar.YEAR, year + 1);
+        }
+
+        List<Post> posts = postRepository.getAvailablePosts(before, after);
+        List<Calendar> dates = postRepository.getAvailableDate();
+        TreeSet<Integer> years = new TreeSet<>(Collections.reverseOrder());
+        for (Calendar calendar : dates){
+            years.add(calendar.get(Calendar.YEAR));
+        }
+
+        if (posts == null){
+            posts = new ArrayList<>();
+        }
+        TreeMap<String, Integer> postList = new TreeMap<>();
+        for (Post post : posts){
+            String postDate = sdf.format(post.getTime().getTime());
+            int count = postList.getOrDefault(postDate, 0);
+            postList.put(postDate, count + 1);
+        }
+
+        return new PostCalendarResponse(years, postList);
     }
 
     public List<Tag> getTagsByList(List<String> tags) {

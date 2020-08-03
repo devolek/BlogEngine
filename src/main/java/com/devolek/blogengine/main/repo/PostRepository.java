@@ -2,8 +2,6 @@ package com.devolek.blogengine.main.repo;
 
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.model.Post;
-import com.devolek.blogengine.main.model.Tag;
-import com.devolek.blogengine.main.model.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -20,15 +18,20 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
             "p.moderationStatus = com.devolek.blogengine.main.enums.ModerationStatus.ACCEPTED and " +
             "p.time <= current_time";
 
-    List<Post> findAllByTagsContains(Tag tag);
-
-    List<Post> findAllByModerationStatus(ModerationStatus moderationStatus);
-
-    List<Post> findAllByUser(User user);
-
     @Query(value = "select count(p) from Post p where " +
             defaultCondition)
     int getAvailablePostCount();
+
+    @Query(value = "select p from Post p where " +
+            defaultCondition +
+            " and (p.time between ?1 and ?2)" +
+            " order by p.time desc")
+    List<Post> getAvailablePosts(Calendar dateFrom, Calendar dateTo);
+
+    @Query(value = "select p.time from Post p where " +
+            defaultCondition +
+            " order by p.time desc")
+    List<Calendar> getAvailableDate();
 
     @Query(value = "select p from Post p where " +
             defaultCondition +

@@ -18,7 +18,7 @@ public interface PostService {
 
     Response getPostById(int id);
 
-    CollectionResponse getPostsByDate(PostByDateRequest request) throws ParseException;
+    CollectionResponse getPostsByDate(int offset, int limit, String date) throws ParseException;
 
     CollectionResponse getPostsByTag(PostByTagRequest request);
 
@@ -33,6 +33,8 @@ public interface PostService {
     Response editPost(int userId, int postId, PostAddRequest request) throws ParseException;
 
     Response addPostDecision(AddModerationRequest request, int userId);
+
+    Response getCalendar(Integer year);
 
     int getPostCountWithTag(Tag tag);
 
