@@ -3,10 +3,12 @@ package com.devolek.blogengine.main.service;
 import com.devolek.blogengine.main.dto.auth.request.ChangePasswordRequest;
 import com.devolek.blogengine.main.dto.auth.request.LoginRequest;
 import com.devolek.blogengine.main.dto.auth.request.SignupRequest;
+import com.devolek.blogengine.main.dto.profile.request.EditProfileRequest;
 import com.devolek.blogengine.main.dto.universal.Response;
 import com.devolek.blogengine.main.model.User;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 public interface UserService {
 
@@ -27,4 +29,6 @@ public interface UserService {
     Response passwordRecovery(HttpServletRequest request, String email);
 
     Response changePassword(ChangePasswordRequest request);
+
+    Response editProfile(int userId, EditProfileRequest request) throws IOException;
 }

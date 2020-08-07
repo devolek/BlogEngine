@@ -21,7 +21,7 @@ public class ImageServiceImpl implements ImageService {
     private String uploadPath;
 
     @Override
-    public String saveImage(MultipartFile file) throws IOException {
+    public String saveImage(MultipartFile file, int width) throws IOException {
         String visibleDirPath = "/upload" + getRandomPath();
         String dirPath = uploadPath + visibleDirPath;
         File dir = new File(dirPath);
@@ -42,24 +42,22 @@ public class ImageServiceImpl implements ImageService {
         File fullFile = new File(filePath);
 
         file.transferTo(fullFile);
-        resizeImage(fullFile, filePath, fileFormat);
+        resizeImage(fullFile, filePath, fileFormat, width);
 
         return visibleFilePath;
     }
 
     @Override
-    public void resizeImage(File file, String dstFolder, String fileFormat) throws IOException {
+    public void resizeImage(File file, String dstFolder, String fileFormat, int width) throws IOException {
         BufferedImage image = ImageIO.read(file);
 
-        int newWidth = 300;
-        int newHeight = (int) Math.round(
-                image.getHeight() / (image.getWidth() / (double) newWidth)
-        );
+        int newHeight = width == 36 ? 36 : (int) Math.round(
+                image.getHeight() / (image.getWidth() / (double) width));
 
         BufferedImage scaledImg = Scalr.resize(image, Scalr.Method.SPEED, Scalr.Mode.FIT_TO_WIDTH,
-                newWidth * 4, newHeight * 4, Scalr.OP_ANTIALIAS);
+                width * 4, newHeight * 4, Scalr.OP_ANTIALIAS);
         BufferedImage scaledImg2 = Scalr.resize(scaledImg, Scalr.Method.QUALITY, Scalr.Mode.FIT_TO_WIDTH,
-                newWidth, newHeight, Scalr.OP_ANTIALIAS);
+                width, newHeight, Scalr.OP_ANTIALIAS);
 
         File newFile = new File(dstFolder);
         ImageIO.write(scaledImg2, fileFormat, newFile);

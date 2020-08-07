@@ -2,14 +2,14 @@ package com.devolek.blogengine.main.controller;
 
 
 import com.devolek.blogengine.main.dto.comments.request.AddCommentRequest;
+import com.devolek.blogengine.main.dto.profile.request.EditProfileRequest;
+import com.devolek.blogengine.main.dto.profile.request.EditProfileWithPhotoRequest;
+import com.devolek.blogengine.main.dto.profile.request.EditProfileWithoutPhotoRequest;
 import com.devolek.blogengine.main.dto.universal.InfoResponse;
 import com.devolek.blogengine.main.model.GlobalSetting;
 import com.devolek.blogengine.main.repo.GlobalSettingRepository;
 import com.devolek.blogengine.main.security.UserDetailsImpl;
-import com.devolek.blogengine.main.service.CommentService;
-import com.devolek.blogengine.main.service.ImageService;
-import com.devolek.blogengine.main.service.PostService;
-import com.devolek.blogengine.main.service.TagService;
+import com.devolek.blogengine.main.service.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -22,15 +22,17 @@ import java.util.*;
 public class ApiGeneralController {
     private final ImageService imageService;
     private final CommentService commentService;
+    private final UserService userService;
     private final GlobalSettingRepository globalSettingRepository;
     private final TagService tagService;
     private final PostService postService;
 
     public ApiGeneralController(ImageService imageService,
                                 CommentService commentService,
-                                GlobalSettingRepository globalSettingRepository, TagService tagService, PostService postService) {
+                                UserService userService, GlobalSettingRepository globalSettingRepository, TagService tagService, PostService postService) {
         this.imageService = imageService;
         this.commentService = commentService;
+        this.userService = userService;
         this.globalSettingRepository = globalSettingRepository;
         this.tagService = tagService;
         this.postService = postService;
@@ -43,7 +45,7 @@ public class ApiGeneralController {
 
     @PostMapping("/api/image")
     public ResponseEntity<?> saveImage(MultipartFile image) throws IOException {
-        return ResponseEntity.ok(imageService.saveImage(image));
+        return ResponseEntity.ok(imageService.saveImage(image, 300));
     }
 
     @PostMapping("/api/comment")
@@ -86,4 +88,15 @@ public class ApiGeneralController {
         return ResponseEntity.ok(postService.getCalendar(year));
     }
 
+    @PostMapping(path = "/api/profile/my", consumes="application/json")
+    public ResponseEntity<?> editProfile(@AuthenticationPrincipal UserDetailsImpl user,
+                                         @RequestBody EditProfileWithoutPhotoRequest request) throws IOException {
+        return ResponseEntity.ok(userService.editProfile(user.getId(), request));
+    }
+
+    @PostMapping(path = "/api/profile/my", consumes="multipart/form-data")
+    public ResponseEntity<?> editProfileWithPhoto(@AuthenticationPrincipal UserDetailsImpl user,
+                                                  EditProfileWithPhotoRequest request) throws IOException {
+        return ResponseEntity.ok(userService.editProfile(user.getId(), request));
+    }
 }

@@ -6,9 +6,9 @@ import java.io.File;
 import java.io.IOException;
 
 public interface ImageService {
-    String saveImage(MultipartFile file) throws IOException;
+    String saveImage(MultipartFile file, int width) throws IOException;
 
-    void resizeImage(File file, String dstFolder, String fileFormat) throws IOException;
+    void resizeImage(File file, String dstFolder, String fileFormat, int width) throws IOException;
 
     String getRandomPath();
 }
