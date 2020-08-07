@@ -1,6 +1,7 @@
 package com.devolek.blogengine.main.model;
 
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.util.Calendar;
@@ -14,13 +15,14 @@ public class CaptchaCode {
     private int id; //id каптча
 
     @Column(nullable = false)
-    @Temporal(TemporalType.DATE)
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
     private Calendar time; //дата и время генерации кода капчи
 
-    @Column(nullable = false, columnDefinition = "TINYTEXT")
-    private int code; //код, отображаемый на картинкке капчи
+    @Column(nullable = false)
+    private String code; //код, отображаемый на картинкке капчи
 
-    @Column(name = "secret_code", nullable = false, columnDefinition = "TINYTEXT")
-    private int secretCode; //код, передаваемый в параметре
+    @Column(name = "secret_code")
+    private String secretCode; //код, передаваемый в параметре
 
 }

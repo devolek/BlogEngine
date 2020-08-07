@@ -23,7 +23,7 @@ databaseChangeLog:
                   valueNumeric: 2
               - column:
                   name: user_id
-                  valueNumeric: 1
+                  valueNumeric: 2
               - column:
                   name: role_id
                   valueNumeric: 1
@@ -35,7 +35,7 @@ databaseChangeLog:
                   valueNumeric: 3
               - column:
                   name: user_id
-                  valueNumeric: 1
+                  valueNumeric: 2
               - column:
                   name: role_id
                   valueNumeric: 2

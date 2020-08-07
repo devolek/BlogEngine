@@ -8,3 +8,22 @@ bezkoder.app.jwtExpirationMs: 86400000
 
 upload:
   path: "C:/Users/Valet/Desktop/storage"
+
+project.name: <Блог для разработчиков/>
+
+captcha.expirationMs: 3600000
+
+spring.mail:
+  # Логин и пароль пользователя от почты на gmail
+  host: smtp.gmail.com
+  port: 587
+  username: blogengineskillbox@gmail.com
+  password: "|HK@$Q20"
+  # Other properties
+  properties.mail.smtp:
+    auth: true
+    connectiontimeout: 5000
+    timeout: 5000
+    writetimeout: 5000
+    # TLS , port 587
+    starttls.enable: true

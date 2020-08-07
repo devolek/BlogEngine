@@ -298,7 +298,18 @@ public class PostServiceImpl implements PostService {
             return new FalseResponse();
         }
         post.setModeratorId(userId);
-        post.setModerationStatus(request.getDecision());
+        switch (request.getDecision()){
+            case "accept" : {
+                post.setModerationStatus(ModerationStatus.ACCEPTED);
+                break;
+            }
+            case "decline" : {
+                post.setModerationStatus(ModerationStatus.DECLINED);
+                break;
+            }
+        }
+        postRepository.save(post);
+
         return new OkResponse();
     }
 

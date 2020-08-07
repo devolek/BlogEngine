@@ -1,6 +1,5 @@
 package com.devolek.blogengine.main.service;
 
-import com.devolek.blogengine.main.dto.universal.Response;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;

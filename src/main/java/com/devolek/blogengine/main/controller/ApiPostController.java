@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.text.ParseException;
 
 @RestController
-@RequestMapping("/api/post")
+@RequestMapping("/api")
 public class ApiPostController {
 
     private final PostService postService;
@@ -24,17 +24,17 @@ public class ApiPostController {
         this.postService = postService;
     }
 
-    @GetMapping
+    @GetMapping("/post")
     public ResponseEntity<?> getPosts(PostListRequest request) {
         return ResponseEntity.ok(postService.getPosts(request));
     }
 
-    @GetMapping("/search")
+    @GetMapping("/post/search")
     public ResponseEntity<?> searchPost(@RequestBody SearchPostRequest request) {
         return ResponseEntity.ok(postService.searchPosts(request));
     }
 
-    @GetMapping("/{ID}")
+    @GetMapping("/post/{ID}")
     public ResponseEntity<?> getPost(@PathVariable int ID) {
         Response response = postService.getPostById(ID);
         return response instanceof OkResponse ?
@@ -42,53 +42,53 @@ public class ApiPostController {
                 ResponseEntity.ok(response);
     }
 
-    @GetMapping("/byDate")
+    @GetMapping("/post/byDate")
     public ResponseEntity<?> getPostByDate(int offset, int limit, String date) throws ParseException {
         return ResponseEntity.ok(postService.getPostsByDate(offset, limit, date));
     }
 
-    @GetMapping("/byTag")
+    @GetMapping("/post/byTag")
     public ResponseEntity<?> getPostByTag(PostByTagRequest request) {
         return ResponseEntity.ok(postService.getPostsByTag(request));
     }
 
-    @GetMapping("/moderation")
+    @GetMapping("/post/moderation")
     public ResponseEntity<?> getPostModeration(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                               PostModerationRequest request) {
+                                                PostModerationRequest request) {
         return ResponseEntity.ok(postService.getPostsModeration(request, userDetails.getId()));
     }
 
     @PostMapping("/moderation")
     public ResponseEntity<?> addPostModeration(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                               AddModerationRequest request) {
+                                               @RequestBody AddModerationRequest request) {
         return ResponseEntity.ok(postService.addPostDecision(request, userDetails.getId()));
     }
 
-    @GetMapping("/my")
+    @GetMapping("/post/my")
     public ResponseEntity<?> getMyPosts(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                         PostModerationRequest request) {
         return ResponseEntity.ok(postService.getMyPosts(request, userDetails.getId()));
     }
 
-    @PostMapping
+    @PostMapping("/post")
     public ResponseEntity<?> addPost(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                      @RequestBody PostAddRequest request) throws ParseException {
         return ResponseEntity.ok(postService.addPost(request, userDetails.getId()));
     }
 
-    @PostMapping("/like")
+    @PostMapping("/post/like")
     public ResponseEntity<?> likePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                       @RequestBody LikeRequest request) {
         return ResponseEntity.ok(postService.likePost(userDetails.getId(), request.getPostId(), 1));
     }
 
-    @PostMapping("/dislike")
+    @PostMapping("/post/dislike")
     public ResponseEntity<?> dislikePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                          @RequestBody LikeRequest request) {
         return ResponseEntity.ok(postService.likePost(userDetails.getId(), request.getPostId(), -1));
     }
 
-    @PutMapping("/{ID}")
+    @PutMapping("/post/{ID}")
     public ResponseEntity<?> editPost(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                       @RequestBody PostAddRequest request,
                                       @PathVariable int ID) throws ParseException {

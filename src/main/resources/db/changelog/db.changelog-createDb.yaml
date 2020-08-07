@@ -213,7 +213,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: secret_code
-                  type: TINYTEXT
+                  type: VARCHAR(255)
                   constraints:
                     nullable: false
         - createTable:
@@ -256,7 +256,7 @@ databaseChangeLog:
                   value: "Многопользовательский режим"
               - column:
                   name: value
-                  value: "NO"
+                  value: "YES"
         - insert:
             tableName: global_settings
             columns:

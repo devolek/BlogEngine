@@ -1,11 +1,9 @@
 package com.devolek.blogengine.main.service.impl;
 
+import com.devolek.blogengine.main.dto.auth.request.ChangePasswordRequest;
 import com.devolek.blogengine.main.dto.auth.request.LoginRequest;
 import com.devolek.blogengine.main.dto.auth.request.SignupRequest;
-import com.devolek.blogengine.main.dto.universal.ErrorResponse;
-import com.devolek.blogengine.main.dto.universal.OkResponse;
-import com.devolek.blogengine.main.dto.universal.Response;
-import com.devolek.blogengine.main.dto.universal.SingleResponse;
+import com.devolek.blogengine.main.dto.universal.*;
 import com.devolek.blogengine.main.dto.user.response.UserResponse;
 import com.devolek.blogengine.main.enums.ERole;
 import com.devolek.blogengine.main.model.Role;
@@ -13,7 +11,10 @@ import com.devolek.blogengine.main.model.User;
 import com.devolek.blogengine.main.repo.RoleRepository;
 import com.devolek.blogengine.main.repo.UserRepository;
 import com.devolek.blogengine.main.security.UserDetailsImpl;
+import com.devolek.blogengine.main.service.EmailService;
 import com.devolek.blogengine.main.service.UserService;
+import com.devolek.blogengine.main.service.dao.UserDao;
+import com.devolek.blogengine.main.util.CodeGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,19 +33,25 @@ import java.util.*;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
+    private final UserDao userDao;
+    private final CaptchaServiceImpl captchaService;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
     Map<String, Integer> session = new HashMap<>();
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
-                           PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
+    public UserServiceImpl(UserDao userDao, CaptchaServiceImpl captchaService, UserRepository userRepository, RoleRepository roleRepository,
+                           PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, EmailService emailService) {
+        this.userDao = userDao;
+        this.captchaService = captchaService;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.emailService = emailService;
     }
 
     @Override
@@ -57,15 +64,15 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             errors.put("email", "Этот e-mail уже зарегистрирован");
         }
-        if (!signUpRequest.getCaptcha().equals(signUpRequest.getCaptchaSecret())) {
+        if (!captchaService.validateCaptcha(signUpRequest.getCaptcha(), signUpRequest.getCaptchaSecret())) {
             errors.put("captcha", "Код с картинки введён неверно");
         }
 
-        if (signUpRequest.getPassword().length() < 6){
+        if (signUpRequest.getPassword().length() < 6) {
             errors.put("password", "Пароль короче 6-ти символов");
         }
 
-        if (errors.size() != 0){
+        if (errors.size() != 0) {
             return new ErrorResponse(errors);
         }
 
@@ -82,13 +89,6 @@ public class UserServiceImpl implements UserService {
 
         log.info("IN register - user: {} successfully registered", userRepository.save(user));
         return new OkResponse();
-    }
-
-    @Override
-    public List<User> getAll() {
-        List<User> result = (List<User>) userRepository.findAll();
-        log.info("IN getAll - {} users found", result.size());
-        return result;
     }
 
     @Override
@@ -113,7 +113,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(int id) {
-        userRepository.deleteById(id);
+        userDao.delete(id);
         log.info("IN delete - user with id: {} successfully deleted", id);
     }
 
@@ -126,20 +126,17 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Response checkAuth(HttpServletRequest httpServletRequest, String sessionId){
-        if (sessionId == null || !session.containsKey(sessionId)){
+    public Response checkAuth(HttpServletRequest httpServletRequest, String sessionId) {
+        if (sessionId == null || !session.containsKey(sessionId)) {
             return new OkResponse(false);
         }
         Principal principal = httpServletRequest.getUserPrincipal();
         String email = null;
-        if(principal != null){
+        if (principal != null) {
             email = httpServletRequest.getUserPrincipal().getName();
         }
-        Optional<User> optional = userRepository.findByEmail(email);
-        User user = new User();
-        if (optional.isPresent()) {
-            user = optional.get();
-        }
+
+        User user = userDao.findByEmail(email);
         return new SingleResponse(new UserResponse(user.getId(), user.getName(), user.getPhoto(), user.getEmail(),
                 user.getIsModerator() == 1, 1, false));
     }
@@ -157,5 +154,47 @@ public class UserServiceImpl implements UserService {
         session.put(sessionId, user.getId());
         return new UserResponse(user.getId(), user.getName(), user.getPhoto(), user.getEmail(),
                 user.getIsModerator() == 1, 1, false);
+    }
+
+    @Override
+    public Response passwordRecovery(HttpServletRequest request, String email) {
+        try {
+            User user = userDao.findByEmail(email);
+            String code = CodeGenerator.codeGenerator();
+            user.setCode(code);
+            userDao.save(user);
+            emailService.sendPasswordRecovery(email, user.getName(),
+                    request.getScheme() + "://" + request.getServerName() +
+                            ":" + request.getServerPort() +
+                            "/login/change-password/" + code);
+            log.info("User {} requested password recovery, confirmation email was sent", email);
+            return new OkResponse();
+        } catch (UsernameNotFoundException e) {
+            return new FalseResponse();
+        }
+    }
+
+    @Override
+    public Response changePassword(ChangePasswordRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        User user = userDao.findByCode(request.getCode());
+        if(user == null){
+            errors.put("code", "Ссылка для восстановления пароля устарела.\n" +
+                    "\t<a href=\"/auth/restore\">Запросить ссылку снова</a>");
+        }
+        if (!captchaService.validateCaptcha(request.getCaptcha(), request.getCaptchaSecret())) {
+            errors.put("captcha", "Код с картинки введён неверно");
+        }
+
+        if (request.getPassword().length() < 6) {
+            errors.put("password", "Пароль короче 6-ти символов");
+        }
+        if (errors.size() != 0) {
+            return new ErrorResponse(errors);
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userDao.save(user);
+        return new OkResponse();
     }
 }
