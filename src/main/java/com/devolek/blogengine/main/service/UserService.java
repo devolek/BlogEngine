@@ -31,4 +31,6 @@ public interface UserService {
     Response changePassword(ChangePasswordRequest request);
 
     Response editProfile(int userId, EditProfileRequest request) throws IOException;
+
+    Response getMyStatistic(int userId);
 }

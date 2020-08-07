@@ -1,6 +1,7 @@
 package com.devolek.blogengine.main.model;
 
 import lombok.Data;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.Calendar;
@@ -17,11 +18,12 @@ public class PostVote {
     @ManyToOne
     private User user; //тот, кто поставил лайк / дизлайк
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     private Post post; //пост, которому поставлен лайк / дизлайк
 
     @Column(nullable = false)
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Calendar time; //дата и время лайка / дизлайка
 
     @Column(nullable = false, columnDefinition = "TINYINT")

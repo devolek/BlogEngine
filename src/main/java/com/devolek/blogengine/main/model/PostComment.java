@@ -1,6 +1,7 @@
 package com.devolek.blogengine.main.model;
 
 import lombok.Data;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.Calendar;
@@ -16,6 +17,7 @@ public class PostComment {
     @ManyToOne(cascade = CascadeType.ALL)
     private PostComment parent; //комментарий, на который оставлен этот комментарий (может быть NULL, если комментарий оставлен просто к посту)
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     private Post post; //пост, к которому написан комментарий
 
@@ -23,7 +25,7 @@ public class PostComment {
     private User user; //автор комментария
 
     @Column(nullable = false)
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Calendar time; //дата и время комментария
 
     @Column(nullable = false, columnDefinition = "TEXT")

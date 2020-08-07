@@ -5,9 +5,11 @@ import com.devolek.blogengine.main.dto.auth.request.LoginRequest;
 import com.devolek.blogengine.main.dto.auth.request.SignupRequest;
 import com.devolek.blogengine.main.dto.profile.request.EditProfileRequest;
 import com.devolek.blogengine.main.dto.profile.request.EditProfileWithPhotoRequest;
+import com.devolek.blogengine.main.dto.profile.response.MyStatisticResponse;
 import com.devolek.blogengine.main.dto.universal.*;
 import com.devolek.blogengine.main.dto.user.response.UserResponse;
 import com.devolek.blogengine.main.enums.ERole;
+import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.Role;
 import com.devolek.blogengine.main.model.User;
 import com.devolek.blogengine.main.repo.RoleRepository;
@@ -18,6 +20,7 @@ import com.devolek.blogengine.main.service.ImageService;
 import com.devolek.blogengine.main.service.UserService;
 import com.devolek.blogengine.main.service.dao.UserDao;
 import com.devolek.blogengine.main.util.CodeGenerator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -244,5 +248,27 @@ public class UserServiceImpl implements UserService {
         userDao.save(user);
 
         return new OkResponse();
+    }
+
+    @Override
+    public Response getMyStatistic(int userId) {
+        User user = userDao.findById(userId);
+        List<Post> posts = user.getPosts();
+        if(posts == null || posts.size() == 0){
+            return new MyStatisticResponse(0,0,0,0, Calendar.getInstance());
+        }
+        int postsCount = 0;
+        int likesCount = 0;
+        int dislikesCount = 0;
+        int viewsCount = 0;
+        Calendar firstPublication = Calendar.getInstance();
+        for (Post post : posts){
+            postsCount += 1;
+            likesCount += (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 1).count();
+            dislikesCount += (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 0).count();
+            viewsCount += post.getViewCount();
+            firstPublication = post.getTime().before(firstPublication) ? post.getTime() : firstPublication;
+        }
+        return new MyStatisticResponse(postsCount, likesCount, dislikesCount, viewsCount, firstPublication);
     }
 }

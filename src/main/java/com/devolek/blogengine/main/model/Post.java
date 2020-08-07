@@ -2,6 +2,7 @@ package com.devolek.blogengine.main.model;
 
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import lombok.Data;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.Calendar;
@@ -26,11 +27,12 @@ public class Post {
     @Column(name = "moderator_id")
     private Integer moderatorId; //ID пользователя-модератора, принявшего решение, или NULL
 
+    @ToString.Exclude
     @ManyToOne(cascade = CascadeType.ALL)
     private User user; //автор поста
 
     @Column(nullable = false)
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Calendar time; //дата и время публикации поста
 
     @Column(nullable = false)

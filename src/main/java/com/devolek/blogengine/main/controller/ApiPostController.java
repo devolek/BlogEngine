@@ -85,7 +85,7 @@ public class ApiPostController {
     @PostMapping("/post/dislike")
     public ResponseEntity<?> dislikePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                          @RequestBody LikeRequest request) {
-        return ResponseEntity.ok(postService.likePost(userDetails.getId(), request.getPostId(), -1));
+        return ResponseEntity.ok(postService.likePost(userDetails.getId(), request.getPostId(), 0));
     }
 
     @PutMapping("/post/{ID}")

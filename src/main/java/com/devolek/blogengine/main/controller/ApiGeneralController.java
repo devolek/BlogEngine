@@ -2,7 +2,6 @@ package com.devolek.blogengine.main.controller;
 
 
 import com.devolek.blogengine.main.dto.comments.request.AddCommentRequest;
-import com.devolek.blogengine.main.dto.profile.request.EditProfileRequest;
 import com.devolek.blogengine.main.dto.profile.request.EditProfileWithPhotoRequest;
 import com.devolek.blogengine.main.dto.profile.request.EditProfileWithoutPhotoRequest;
 import com.devolek.blogengine.main.dto.universal.InfoResponse;
@@ -16,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 public class ApiGeneralController {
@@ -55,7 +56,6 @@ public class ApiGeneralController {
     }
 
 
-
     @GetMapping("/api/settings")
     public Map<String, Object> getSettings() {
         HashMap<String, Object> model = new HashMap<>();
@@ -88,15 +88,20 @@ public class ApiGeneralController {
         return ResponseEntity.ok(postService.getCalendar(year));
     }
 
-    @PostMapping(path = "/api/profile/my", consumes="application/json")
+    @PostMapping(path = "/api/profile/my", consumes = "application/json")
     public ResponseEntity<?> editProfile(@AuthenticationPrincipal UserDetailsImpl user,
                                          @RequestBody EditProfileWithoutPhotoRequest request) throws IOException {
         return ResponseEntity.ok(userService.editProfile(user.getId(), request));
     }
 
-    @PostMapping(path = "/api/profile/my", consumes="multipart/form-data")
+    @PostMapping(path = "/api/profile/my", consumes = "multipart/form-data")
     public ResponseEntity<?> editProfileWithPhoto(@AuthenticationPrincipal UserDetailsImpl user,
                                                   EditProfileWithPhotoRequest request) throws IOException {
         return ResponseEntity.ok(userService.editProfile(user.getId(), request));
+    }
+
+    @GetMapping("/api/statistics/my")
+    public ResponseEntity<?> getMyStatistic(@AuthenticationPrincipal UserDetailsImpl user){
+        return ResponseEntity.ok(userService.getMyStatistic(user.getId()));
     }
 }

@@ -32,7 +32,7 @@ public class PostResponseFactory {
     private static PostResponseDto postToDto(Post post) {
 
         int postLikes = (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 1).count();
-        int postDislikes = (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == -1).count();
+        int postDislikes = (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 0).count();
 
         return new PostResponseDto(post.getId(), post.getTime(),
                 new UserDto(post.getUser().getId(), post.getUser().getName()),

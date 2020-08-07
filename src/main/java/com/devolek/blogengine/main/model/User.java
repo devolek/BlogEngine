@@ -5,6 +5,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -20,7 +21,7 @@ public class User {
     private int isModerator; //является ли пользователь модератором (может ли править глобальные настройки сайта и модерировать посты)
 
     @Column(name = "reg_time", nullable = false)
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
     private Calendar regTime; //дата и время регистрации пользователя
 
@@ -44,4 +45,7 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
+
+    @OneToMany(mappedBy = "user")
+    private List<Post> posts;
 }

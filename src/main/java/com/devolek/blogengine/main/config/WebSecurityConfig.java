@@ -45,7 +45,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/api/post/**", "/favicon.ico", "/api/init",
                         "/api/settings", "/api/tag", "/api/calendar", "/login/**", "/posts/**"
                         , "/calendar/*", "/post/*", "/stat").permitAll()
-                .antMatchers("/api/post/my", "/api/image", "/api/comment").hasRole("USER")
+                .antMatchers("/api/post/my", "/api/image", "/api/comment",
+                        "/api/statistics/my", "/api/profile/my").hasRole("USER")
                 .antMatchers("/api/moderation").hasRole("MODERATOR")
                 //Все остальные страницы требуют аутентификации
                 .anyRequest().authenticated();
