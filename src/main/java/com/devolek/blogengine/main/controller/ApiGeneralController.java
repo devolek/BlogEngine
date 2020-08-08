@@ -5,8 +5,6 @@ import com.devolek.blogengine.main.dto.comments.request.AddCommentRequest;
 import com.devolek.blogengine.main.dto.profile.request.EditProfileWithPhotoRequest;
 import com.devolek.blogengine.main.dto.profile.request.EditProfileWithoutPhotoRequest;
 import com.devolek.blogengine.main.dto.universal.InfoResponse;
-import com.devolek.blogengine.main.model.GlobalSetting;
-import com.devolek.blogengine.main.repo.GlobalSettingRepository;
 import com.devolek.blogengine.main.security.UserDetailsImpl;
 import com.devolek.blogengine.main.service.*;
 import org.springframework.http.ResponseEntity;
@@ -15,28 +13,26 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 public class ApiGeneralController {
     private final ImageService imageService;
     private final CommentService commentService;
     private final UserService userService;
-    private final GlobalSettingRepository globalSettingRepository;
     private final TagService tagService;
     private final PostService postService;
+    private final GlobalService globalService;
 
     public ApiGeneralController(ImageService imageService,
                                 CommentService commentService,
-                                UserService userService, GlobalSettingRepository globalSettingRepository, TagService tagService, PostService postService) {
+                                UserService userService, TagService tagService, PostService postService, GlobalService globalService) {
         this.imageService = imageService;
         this.commentService = commentService;
         this.userService = userService;
-        this.globalSettingRepository = globalSettingRepository;
         this.tagService = tagService;
         this.postService = postService;
+        this.globalService = globalService;
     }
 
     @GetMapping("/api/init")
@@ -57,25 +53,13 @@ public class ApiGeneralController {
 
 
     @GetMapping("/api/settings")
-    public Map<String, Object> getSettings() {
-        HashMap<String, Object> model = new HashMap<>();
-        Iterable<GlobalSetting> iterable = globalSettingRepository.findAll();
-        for (GlobalSetting globalSetting : iterable) {
-            model.put(globalSetting.getCode(), globalSetting.getValue().equals("YES"));
-        }
-        return model;
+    public ResponseEntity<?> getSettings() {
+        return ResponseEntity.ok(globalService.getSettings());
     }
 
     @PutMapping("/api/settings")
-    public void saveSettings(@RequestBody Map<String, Object> model) {
-        for (String code : model.keySet()) {
-            Optional<GlobalSetting> setting = globalSettingRepository.findByCode(code);
-            if (setting.isPresent()) {
-                GlobalSetting globalSetting = setting.get();
-                globalSetting.setValue(model.get(code).equals(true) ? "YES" : "NO");
-                globalSettingRepository.save(globalSetting);
-            }
-        }
+    public ResponseEntity<?> saveSettings(@RequestBody Map<String, Object> model) {
+        return ResponseEntity.ok(globalService.setSettings(model));
     }
 
     @GetMapping("/api/tag")

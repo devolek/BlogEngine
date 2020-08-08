@@ -44,7 +44,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/img/**", "/js/**", "/imgs/**", "/fonts/**",
                         "/api/post/**", "/favicon.ico", "/api/init",
                         "/api/settings", "/api/tag", "/api/calendar", "/login/**", "/posts/**"
-                        , "/calendar/*", "/post/*", "/stat").permitAll()
+                        , "/calendar/*", "/post/*", "/stat", "/api/statistics/all").permitAll()
                 .antMatchers("/api/post/my", "/api/image", "/api/comment",
                         "/api/statistics/my", "/api/profile/my").hasRole("USER")
                 .antMatchers("/api/moderation").hasRole("MODERATOR")

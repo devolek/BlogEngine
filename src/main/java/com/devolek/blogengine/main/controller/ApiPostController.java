@@ -94,4 +94,9 @@ public class ApiPostController {
                                       @PathVariable int ID) throws ParseException {
         return ResponseEntity.ok(postService.editPost(userDetails.getId(), ID, request));
     }
+
+    @GetMapping("/statistics/all")
+    public ResponseEntity<?> getStatistic(@AuthenticationPrincipal UserDetailsImpl userDetails){
+        return ResponseEntity.ok(postService.getStatistic(userDetails == null ? null : userDetails.getId()));
+    }
 }

@@ -24,7 +24,7 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
 
     @Query(value = "select p from Post p where " +
             defaultCondition +
-            " and (p.time between ?1 and ?2)" +
+            " and ?1 is null or (p.time between ?1 and ?2)" +
             " order by p.time desc")
     List<Post> getAvailablePosts(Calendar dateFrom, Calendar dateTo);
 

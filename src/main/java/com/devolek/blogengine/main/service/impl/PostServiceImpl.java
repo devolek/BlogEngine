@@ -3,6 +3,7 @@ package com.devolek.blogengine.main.service.impl;
 import com.devolek.blogengine.main.dto.post.PostResponseFactory;
 import com.devolek.blogengine.main.dto.post.request.*;
 import com.devolek.blogengine.main.dto.post.response.PostCalendarResponse;
+import com.devolek.blogengine.main.dto.profile.response.MyStatisticResponse;
 import com.devolek.blogengine.main.dto.universal.*;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.model.Post;
@@ -14,6 +15,8 @@ import com.devolek.blogengine.main.repo.PostVotesRepository;
 import com.devolek.blogengine.main.repo.TagRepository;
 import com.devolek.blogengine.main.service.PostService;
 import com.devolek.blogengine.main.service.UserService;
+import com.devolek.blogengine.main.service.dao.GlobalSettingsDao;
+import com.devolek.blogengine.main.service.dao.UserDao;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
@@ -31,15 +34,19 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final UserService userService;
     private final TagRepository tagRepository;
+    private final GlobalSettingsDao globalSettingsDao;
+    private final UserDao userDao;
 
     public PostServiceImpl(PostVotesRepository postVotesRepository,
                            PostRepository postRepository,
                            UserService userService,
-                           TagRepository tagRepository) {
+                           TagRepository tagRepository, GlobalSettingsDao globalSettingsDao, UserDao userDao) {
         this.postVotesRepository = postVotesRepository;
         this.postRepository = postRepository;
         this.userService = userService;
         this.tagRepository = tagRepository;
+        this.globalSettingsDao = globalSettingsDao;
+        this.userDao = userDao;
     }
 
     @Override
@@ -294,16 +301,16 @@ public class PostServiceImpl implements PostService {
     @Override
     public Response addPostDecision(AddModerationRequest request, int userId) {
         Post post = findPostById(request.getPostId());
-        if (post == null){
+        if (post == null) {
             return new FalseResponse();
         }
         post.setModeratorId(userId);
-        switch (request.getDecision()){
-            case "accept" : {
+        switch (request.getDecision()) {
+            case "accept": {
                 post.setModerationStatus(ModerationStatus.ACCEPTED);
                 break;
             }
-            case "decline" : {
+            case "decline": {
                 post.setModerationStatus(ModerationStatus.DECLINED);
                 break;
             }
@@ -322,7 +329,7 @@ public class PostServiceImpl implements PostService {
         before.set(now.get(Calendar.YEAR) - 1, Calendar.DECEMBER, 31);
         after.set(now.get(Calendar.YEAR) + 1, Calendar.JANUARY, 1);
 
-        if (year != null && now.get(Calendar.YEAR) >= year){
+        if (year != null && now.get(Calendar.YEAR) >= year) {
             before.set(Calendar.YEAR, year - 1);
             after.set(Calendar.YEAR, year + 1);
         }
@@ -330,15 +337,15 @@ public class PostServiceImpl implements PostService {
         List<Post> posts = postRepository.getAvailablePosts(before, after);
         List<Calendar> dates = postRepository.getAvailableDate();
         TreeSet<Integer> years = new TreeSet<>(Collections.reverseOrder());
-        for (Calendar calendar : dates){
+        for (Calendar calendar : dates) {
             years.add(calendar.get(Calendar.YEAR));
         }
 
-        if (posts == null){
+        if (posts == null) {
             posts = new ArrayList<>();
         }
         TreeMap<String, Integer> postList = new TreeMap<>();
-        for (Post post : posts){
+        for (Post post : posts) {
             String postDate = sdf.format(post.getTime().getTime());
             int count = postList.getOrDefault(postDate, 0);
             postList.put(postDate, count + 1);
@@ -362,5 +369,31 @@ public class PostServiceImpl implements PostService {
             });
         }
         return tagList;
+    }
+
+    @Override
+    public Response getStatistic(Integer userId) {
+        Map<String, Object> settings = globalSettingsDao.getSettings();
+        if (settings.get("STATISTICS_IS_PUBLIC").equals("NO") &&
+                userDao.findById(userId).getIsModerator() != 1) {
+            return new MyStatisticResponse(0, 0, 0, 0, Calendar.getInstance());
+        }
+        List<Post> posts = postRepository.getAvailablePosts(null, null);
+        if (posts == null || posts.size() == 0) {
+            return new MyStatisticResponse(0, 0, 0, 0, Calendar.getInstance());
+        }
+        int postsCount = 0;
+        int likesCount = 0;
+        int dislikesCount = 0;
+        int viewsCount = 0;
+        Calendar firstPublication = Calendar.getInstance();
+        for (Post post : posts) {
+            postsCount += 1;
+            likesCount += (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 1).count();
+            dislikesCount += (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 0).count();
+            viewsCount += post.getViewCount();
+            firstPublication = post.getTime().before(firstPublication) ? post.getTime() : firstPublication;
+        }
+        return new MyStatisticResponse(postsCount, likesCount, dislikesCount, viewsCount, firstPublication);
     }
 }

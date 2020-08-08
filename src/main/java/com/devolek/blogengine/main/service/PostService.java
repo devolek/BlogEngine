@@ -41,4 +41,6 @@ public interface PostService {
     int countAvailablePosts();
 
     List<Tag> getTagsByList(List<String> tags);
+
+    Response getStatistic(Integer userId);
 }

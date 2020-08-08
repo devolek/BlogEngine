@@ -1,6 +1,7 @@
 package com.devolek.blogengine.main.model;
 
 import lombok.Data;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -46,6 +47,7 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "user")
     private List<Post> posts;
 }
