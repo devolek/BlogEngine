@@ -5,9 +5,10 @@ import com.devolek.blogengine.main.dto.comments.request.AddCommentRequest;
 import com.devolek.blogengine.main.dto.profile.request.EditProfileWithPhotoRequest;
 import com.devolek.blogengine.main.dto.profile.request.EditProfileWithoutPhotoRequest;
 import com.devolek.blogengine.main.dto.universal.InfoResponse;
-import com.devolek.blogengine.main.security.UserDetailsImpl;
+import com.devolek.blogengine.main.security.jwt.UserDetailsImpl;
 import com.devolek.blogengine.main.service.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -57,6 +58,7 @@ public class ApiGeneralController {
         return ResponseEntity.ok(globalService.getSettings());
     }
 
+    @Secured("ROLE_MODERATOR")
     @PutMapping("/api/settings")
     public ResponseEntity<?> saveSettings(@RequestBody Map<String, Object> model) {
         return ResponseEntity.ok(globalService.setSettings(model));

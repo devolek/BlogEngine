@@ -14,7 +14,6 @@ import com.devolek.blogengine.main.repo.PostRepository;
 import com.devolek.blogengine.main.repo.PostVotesRepository;
 import com.devolek.blogengine.main.repo.TagRepository;
 import com.devolek.blogengine.main.service.PostService;
-import com.devolek.blogengine.main.service.UserService;
 import com.devolek.blogengine.main.service.dao.GlobalSettingsDao;
 import com.devolek.blogengine.main.service.dao.UserDao;
 import lombok.extern.slf4j.Slf4j;
@@ -32,18 +31,17 @@ import java.util.*;
 public class PostServiceImpl implements PostService {
     private final PostVotesRepository postVotesRepository;
     private final PostRepository postRepository;
-    private final UserService userService;
     private final TagRepository tagRepository;
     private final GlobalSettingsDao globalSettingsDao;
     private final UserDao userDao;
 
     public PostServiceImpl(PostVotesRepository postVotesRepository,
                            PostRepository postRepository,
-                           UserService userService,
-                           TagRepository tagRepository, GlobalSettingsDao globalSettingsDao, UserDao userDao) {
+                           TagRepository tagRepository,
+                           GlobalSettingsDao globalSettingsDao,
+                           UserDao userDao) {
         this.postVotesRepository = postVotesRepository;
         this.postRepository = postRepository;
-        this.userService = userService;
         this.tagRepository = tagRepository;
         this.globalSettingsDao = globalSettingsDao;
         this.userDao = userDao;
@@ -99,13 +97,15 @@ public class PostServiceImpl implements PostService {
 
         if (currentUserEmail.equals("anonymousUser")) {
             post = postRepository.getActiveById(id);
-        } else if (post != null && post.getUser().equals(userService.findByEmail(currentUserEmail))) {
+        } else if (post != null && post.getUser().equals(userDao.findByEmail(currentUserEmail))) {
             return PostResponseFactory.getSinglePost(post);
         }
 
         if (post == null) {
             return new OkResponse(false);
         }
+        post.setViewCount(post.getViewCount() + 1);
+        postRepository.save(post);
         return PostResponseFactory.getSinglePost(post);
     }
 
@@ -211,7 +211,7 @@ public class PostServiceImpl implements PostService {
         newPost.setText(request.getText());
         newPost.setModerationStatus(ModerationStatus.NEW);
         newPost.setViewCount(0);
-        newPost.setUser(userService.findById(userId));
+        newPost.setUser(userDao.findById(userId));
         newPost.setComments(new ArrayList<>());
         newPost.setPostVotes(new ArrayList<>());
         newPost.setTags(getTagsByList(request.getTags()));
@@ -224,7 +224,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Response likePost(int userId, int postId, int value) {
         Post post = postRepository.findById(postId).orElse(null);
-        User user = userService.findById(userId);
+        User user = userDao.findById(userId);
         PostVote vote = postVotesRepository.findByUserAndPost(user, post);
         if (vote != null) {
             if (vote.getValue() == value) {
@@ -244,7 +244,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Response editPost(int userId, int postId, PostAddRequest request) throws ParseException {
         Post post = postRepository.findById(postId).orElse(null);
-        User user = userService.findById(userId);
+        User user = userDao.findById(userId);
         if (post == null || user == null) {
             return new OkResponse(false);
         }
@@ -379,21 +379,6 @@ public class PostServiceImpl implements PostService {
             return new MyStatisticResponse(0, 0, 0, 0, Calendar.getInstance());
         }
         List<Post> posts = postRepository.getAvailablePosts(null, null);
-        if (posts == null || posts.size() == 0) {
-            return new MyStatisticResponse(0, 0, 0, 0, Calendar.getInstance());
-        }
-        int postsCount = 0;
-        int likesCount = 0;
-        int dislikesCount = 0;
-        int viewsCount = 0;
-        Calendar firstPublication = Calendar.getInstance();
-        for (Post post : posts) {
-            postsCount += 1;
-            likesCount += (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 1).count();
-            dislikesCount += (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 0).count();
-            viewsCount += post.getViewCount();
-            firstPublication = post.getTime().before(firstPublication) ? post.getTime() : firstPublication;
-        }
-        return new MyStatisticResponse(postsCount, likesCount, dislikesCount, viewsCount, firstPublication);
+        return UserServiceImpl.getStatisticResponse(posts);
     }
 }

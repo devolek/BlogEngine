@@ -12,6 +12,10 @@ public interface UserDao {
 
     User findByCode(String code);
 
+    boolean existsByName (String name);
+
+    boolean existsByEmail (String email);
+
     void delete(int id);
 
     void save(User user);

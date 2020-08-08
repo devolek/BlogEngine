@@ -1,6 +1,7 @@
 package com.devolek.blogengine.main.security;
 
 import com.devolek.blogengine.main.model.User;
+import com.devolek.blogengine.main.security.jwt.UserDetailsFactory;
 import com.devolek.blogengine.main.service.dao.UserDao;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,11 +20,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User person = this.userDao.findByEmail(email);
-        if (person == null) {
+        User user = this.userDao.findByEmail(email);
+        if (user == null) {
             throw new UsernameNotFoundException("User with ID " + email + " not found");
         }
-
-        return UserDetailsImpl.build(person);
+        return UserDetailsFactory.build(user);
     }
 }

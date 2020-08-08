@@ -1,23 +1,29 @@
 package com.devolek.blogengine.main.config;
 
 
-import com.devolek.blogengine.main.security.UserDetailsServiceImpl;
+import com.devolek.blogengine.main.security.jwt.JwtConfigurer;
+import com.devolek.blogengine.main.security.jwt.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
+@EnableGlobalMethodSecurity(
+        prePostEnabled = true,
+        securedEnabled = true,
+        jsr250Enabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final UserDetailsServiceImpl userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public WebSecurityConfig(UserDetailsServiceImpl userService) {
-        this.userService = userService;
+    public WebSecurityConfig(JwtTokenProvider jwtTokenProvider) {
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Bean
@@ -34,26 +40,32 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .antMatcher("/api/**")
                 .httpBasic().disable()
                 .csrf().disable()
                 .cors()
                 .and()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
                 .authorizeRequests()
                 //Доступ только для не зарегистрированных пользователей
-                .antMatchers("/api/auth/**", "/", "/static/**", "/css/**",
-                        "/img/**", "/js/**", "/imgs/**", "/fonts/**",
-                        "/api/post/**", "/favicon.ico", "/api/init",
-                        "/api/settings", "/api/tag", "/api/calendar", "/login/**", "/posts/**"
-                        , "/calendar/*", "/post/*", "/stat", "/api/statistics/all").permitAll()
-                .antMatchers("/api/post/my", "/api/image", "/api/comment",
-                        "/api/statistics/my", "/api/profile/my").hasRole("USER")
-                .antMatchers("/api/moderation").hasRole("MODERATOR")
-                //Все остальные страницы требуют аутентификации
-                .anyRequest().authenticated();
+                .antMatchers("/api/auth/**",
+                        "/api/calendar",
+                        "/api/post/**",
+                        "/api/init",
+                        "/api/settings",
+                        "/api/tag",
+                        "/api/statistics/all").permitAll()
+                .antMatchers("/api/post/my",
+                        "/api/statistics/my",
+                        "/api/image",
+                        "/api/comment/",
+                        "/api/profile/my").hasRole("USER")
+                .antMatchers("/api/post/moderation", "/api/moderation").hasRole("MODERATOR")
+                .anyRequest().authenticated()
+                .and()
+                .apply(new JwtConfigurer(jwtTokenProvider))
+                .and().exceptionHandling().authenticationEntryPoint(Http401EntryPoint.unauthorizedHandler());
     }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userService).passwordEncoder(passwordEncoder());
-    }
 }

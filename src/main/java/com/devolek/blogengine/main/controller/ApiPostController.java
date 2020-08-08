@@ -4,11 +4,13 @@ package com.devolek.blogengine.main.controller;
 import com.devolek.blogengine.main.dto.post.request.*;
 import com.devolek.blogengine.main.dto.universal.OkResponse;
 import com.devolek.blogengine.main.dto.universal.Response;
-import com.devolek.blogengine.main.security.UserDetailsImpl;
+import com.devolek.blogengine.main.security.jwt.UserDetailsImpl;
 import com.devolek.blogengine.main.service.PostService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -30,7 +32,7 @@ public class ApiPostController {
     }
 
     @GetMapping("/post/search")
-    public ResponseEntity<?> searchPost(@RequestBody SearchPostRequest request) {
+    public ResponseEntity<?> searchPost(SearchPostRequest request) {
         return ResponseEntity.ok(postService.searchPosts(request));
     }
 
@@ -52,42 +54,50 @@ public class ApiPostController {
         return ResponseEntity.ok(postService.getPostsByTag(request));
     }
 
+    @Secured("ROLE_MODERATOR")
     @GetMapping("/post/moderation")
     public ResponseEntity<?> getPostModeration(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                PostModerationRequest request) {
+                                               PostModerationRequest request) {
         return ResponseEntity.ok(postService.getPostsModeration(request, userDetails.getId()));
     }
 
+    @Secured("ROLE_MODERATOR")
     @PostMapping("/moderation")
     public ResponseEntity<?> addPostModeration(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                @RequestBody AddModerationRequest request) {
         return ResponseEntity.ok(postService.addPostDecision(request, userDetails.getId()));
     }
 
+    @Secured("ROLE_USER")
     @GetMapping("/post/my")
     public ResponseEntity<?> getMyPosts(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                         PostModerationRequest request) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(postService.getMyPosts(request, userDetails.getId()));
     }
 
+    @Secured("ROLE_USER")
     @PostMapping("/post")
     public ResponseEntity<?> addPost(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                      @RequestBody PostAddRequest request) throws ParseException {
         return ResponseEntity.ok(postService.addPost(request, userDetails.getId()));
     }
 
+    @Secured("ROLE_USER")
     @PostMapping("/post/like")
     public ResponseEntity<?> likePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                       @RequestBody LikeRequest request) {
         return ResponseEntity.ok(postService.likePost(userDetails.getId(), request.getPostId(), 1));
     }
 
+    @Secured("ROLE_USER")
     @PostMapping("/post/dislike")
     public ResponseEntity<?> dislikePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                          @RequestBody LikeRequest request) {
         return ResponseEntity.ok(postService.likePost(userDetails.getId(), request.getPostId(), 0));
     }
 
+    @Secured("ROLE_USER")
     @PutMapping("/post/{ID}")
     public ResponseEntity<?> editPost(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                       @RequestBody PostAddRequest request,
@@ -96,7 +106,7 @@ public class ApiPostController {
     }
 
     @GetMapping("/statistics/all")
-    public ResponseEntity<?> getStatistic(@AuthenticationPrincipal UserDetailsImpl userDetails){
+    public ResponseEntity<?> getStatistic(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(postService.getStatistic(userDetails == null ? null : userDetails.getId()));
     }
 }

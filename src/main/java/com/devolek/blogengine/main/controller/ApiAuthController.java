@@ -7,12 +7,14 @@ import com.devolek.blogengine.main.dto.auth.request.SignupRequest;
 import com.devolek.blogengine.main.dto.auth.response.LoginResponse;
 import com.devolek.blogengine.main.dto.universal.ErrorResponse;
 import com.devolek.blogengine.main.dto.universal.Response;
+import com.devolek.blogengine.main.service.AuthService;
 import com.devolek.blogengine.main.service.CaptchaService;
 import com.devolek.blogengine.main.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 
@@ -22,24 +24,23 @@ public class ApiAuthController {
 
     private final UserService userService;
     private final CaptchaService captchaService;
+    private final AuthService authService;
 
-    public ApiAuthController(UserService userService, CaptchaService captchaService) {
+    public ApiAuthController(UserService userService, CaptchaService captchaService, AuthService authService) {
         this.userService = userService;
         this.captchaService = captchaService;
+        this.authService = authService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestHeader(name = "Cookie") String sessionId,
+    public ResponseEntity<?> authenticateUser(HttpServletResponse response,
                                               @Valid @RequestBody LoginRequest loginRequest) {
-
-        Response userResponse = userService.login(loginRequest, sessionId);
-
-        return ResponseEntity.ok(new LoginResponse(true, userResponse));
+        return ResponseEntity.ok(new LoginResponse(true, authService.login(loginRequest, response)));
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signUpRequest) {
-        Response result = userService.register(signUpRequest);
+        Response result = authService.register(signUpRequest);
         return result instanceof ErrorResponse ?
                 ResponseEntity.badRequest().body(result) : ResponseEntity.ok(result);
     }
@@ -50,13 +51,13 @@ public class ApiAuthController {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<?> checkAuth(@RequestHeader(name = "Cookie", required = false) String sessionId, HttpServletRequest httpServletRequest) {
-        return ResponseEntity.ok(userService.checkAuth(httpServletRequest, sessionId));
+    public ResponseEntity<?> checkAuth(HttpServletRequest httpServletRequest) {
+        return ResponseEntity.ok(authService.checkAuth(httpServletRequest));
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader(name = "Cookie") String sessionId) {
-        return ResponseEntity.ok(userService.logout(sessionId));
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        return ResponseEntity.ok(authService.logout(response));
     }
 
     @PostMapping("/restore")
