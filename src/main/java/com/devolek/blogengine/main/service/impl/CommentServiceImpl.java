@@ -4,6 +4,7 @@ import com.devolek.blogengine.main.dto.comments.request.AddCommentRequest;
 import com.devolek.blogengine.main.dto.comments.response.AddCommentResponse;
 import com.devolek.blogengine.main.dto.universal.ErrorResponse;
 import com.devolek.blogengine.main.dto.universal.Response;
+import com.devolek.blogengine.main.exeption.InvalidRequestException;
 import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.PostComment;
 import com.devolek.blogengine.main.model.User;
@@ -63,11 +64,11 @@ public class CommentServiceImpl implements CommentService {
         }
 
         if (postService.findPostById(request.getPostId()) == null) {
-            errors.put("post", "Такого поста не существует");
+            throw new InvalidRequestException("invalid post id");
         }
 
         if (request.getParentId() != null && findById(request.getParentId()) == null) {
-            errors.put("parent", "Такого комментария не существет");
+            throw new InvalidRequestException("invalid comment id");
         }
         if (errors.size() != 0) {
             return new ErrorResponse(errors);

@@ -6,6 +6,7 @@ import com.devolek.blogengine.main.dto.post.response.PostCalendarResponse;
 import com.devolek.blogengine.main.dto.profile.response.MyStatisticResponse;
 import com.devolek.blogengine.main.dto.universal.*;
 import com.devolek.blogengine.main.enums.ModerationStatus;
+import com.devolek.blogengine.main.exeption.NotFoundException;
 import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.PostVote;
 import com.devolek.blogengine.main.model.Tag;
@@ -102,7 +103,7 @@ public class PostServiceImpl implements PostService {
         }
 
         if (post == null) {
-            return new OkResponse(false);
+            throw new NotFoundException("", "");
         }
         post.setViewCount(post.getViewCount() + 1);
         postRepository.save(post);
@@ -194,10 +195,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Response addPost(PostAddRequest request, int userId) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    public Response addPost(PostAddRequest request, int userId) {
         Calendar date = Calendar.getInstance();
-        date.setTime(sdf.parse(request.getTime()));
+        date.setTimeInMillis(request.getTime() * 1000);
 
         Response error = checkPostRequest(request);
         if (error != null) {
@@ -209,7 +209,13 @@ public class PostServiceImpl implements PostService {
         newPost.setIsActive(request.getActive());
         newPost.setTitle(request.getTitle());
         newPost.setText(request.getText());
-        newPost.setModerationStatus(ModerationStatus.NEW);
+
+
+
+        newPost.setModerationStatus(
+                globalSettingsDao.getSettings().get("POST_PREMODERATION") ?
+                        ModerationStatus.NEW : ModerationStatus.ACCEPTED);
+
         newPost.setViewCount(0);
         newPost.setUser(userDao.findById(userId));
         newPost.setComments(new ArrayList<>());
@@ -242,7 +248,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Response editPost(int userId, int postId, PostAddRequest request) throws ParseException {
+    public Response editPost(int userId, int postId, PostAddRequest request) {
         Post post = postRepository.findById(postId).orElse(null);
         User user = userDao.findById(userId);
         if (post == null || user == null) {
@@ -255,11 +261,12 @@ public class PostServiceImpl implements PostService {
         }
 
         if (user.getIsModerator() != 1) {
-            post.setModerationStatus(ModerationStatus.NEW);
+            post.setModerationStatus(
+                    globalSettingsDao.getSettings().get("POST_PREMODERATION") ?
+                            ModerationStatus.NEW : ModerationStatus.ACCEPTED);
         }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         Calendar date = Calendar.getInstance();
-        date.setTime(sdf.parse(request.getTime()));
+        date.setTimeInMillis(request.getTime() * 1000);
 
         post.setTime(date.before(Calendar.getInstance()) ? Calendar.getInstance() : date);
         post.setIsActive(request.getActive());
@@ -373,10 +380,14 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Response getStatistic(Integer userId) {
-        Map<String, Object> settings = globalSettingsDao.getSettings();
-        if (settings.get("STATISTICS_IS_PUBLIC").equals("NO") &&
+
+        if (!globalSettingsDao.getSettings().get("STATISTICS_IS_PUBLIC") &&
                 userDao.findById(userId).getIsModerator() != 1) {
-            return new MyStatisticResponse(0, 0, 0, 0, Calendar.getInstance());
+            return new MyStatisticResponse(0,
+                    0,
+                    0,
+                    0,
+                    new Date());
         }
         List<Post> posts = postRepository.getAvailablePosts(null, null);
         return UserServiceImpl.getStatisticResponse(posts);

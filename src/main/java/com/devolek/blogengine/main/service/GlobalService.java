@@ -5,6 +5,6 @@ import com.devolek.blogengine.main.dto.universal.Response;
 import java.util.Map;
 
 public interface GlobalService {
-    Map<String,Object> getSettings();
+    Map<String,Boolean> getSettings();
     Response setSettings(Map<String, Object> model);
 }

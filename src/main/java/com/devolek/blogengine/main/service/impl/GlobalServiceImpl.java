@@ -17,7 +17,7 @@ public class GlobalServiceImpl implements GlobalService {
     }
 
     @Override
-    public Map<String, Object> getSettings() {
+    public Map<String, Boolean> getSettings() {
         return globalSettingsDao.getSettings();
     }
 

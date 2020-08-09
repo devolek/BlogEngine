@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Calendar;
+import java.util.Date;
 
 
 @Data
@@ -15,6 +17,6 @@ public class MyStatisticResponse implements Response {
     private int likesCount;
     private int dislikesCount;
     private int viewsCount;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Europe/Moscow")
-    private Calendar firstPublication;
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER, timezone = "UTC")
+    private Date firstPublication;
 }

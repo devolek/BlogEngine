@@ -3,7 +3,6 @@ package com.devolek.blogengine.main.security.jwt;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.servlet.server.Session;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -71,13 +70,13 @@ public class JwtTokenProvider {
     }
 
     public String resolveToken(HttpServletRequest req) {
-        if (req.getCookies() == null){
+        if (req.getCookies() == null) {
             return null;
         }
         List<Cookie> cookies = Arrays.stream(req.getCookies())
                 .filter(c -> c.getName().equals(HEADER))
                 .collect(Collectors.toList());
-        if (cookies.isEmpty() || cookies.get(0).getValue().equals("")){
+        if (cookies.isEmpty() || cookies.get(0).getValue().equals("")) {
             return null;
         }
         return cookies.get(0).getValue();

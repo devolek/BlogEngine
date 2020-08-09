@@ -19,8 +19,8 @@ public class GlobalSettingsDaoImpl implements GlobalSettingsDao {
     }
 
     @Override
-    public Map<String, Object> getSettings() {
-        HashMap<String, Object> model = new HashMap<>();
+    public Map<String, Boolean> getSettings() {
+        HashMap<String, Boolean> model = new HashMap<>();
         Iterable<GlobalSetting> iterable = globalSettingRepository.findAll();
         for (GlobalSetting globalSetting : iterable) {
             model.put(globalSetting.getCode(), globalSetting.getValue().equals("YES"));

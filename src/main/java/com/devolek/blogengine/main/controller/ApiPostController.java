@@ -2,15 +2,11 @@ package com.devolek.blogengine.main.controller;
 
 
 import com.devolek.blogengine.main.dto.post.request.*;
-import com.devolek.blogengine.main.dto.universal.OkResponse;
-import com.devolek.blogengine.main.dto.universal.Response;
 import com.devolek.blogengine.main.security.jwt.UserDetailsImpl;
 import com.devolek.blogengine.main.service.PostService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -38,10 +34,7 @@ public class ApiPostController {
 
     @GetMapping("/post/{ID}")
     public ResponseEntity<?> getPost(@PathVariable int ID) {
-        Response response = postService.getPostById(ID);
-        return response instanceof OkResponse ?
-                ResponseEntity.status(HttpStatus.NOT_FOUND).body(response) :
-                ResponseEntity.ok(response);
+        return ResponseEntity.ok(postService.getPostById(ID));
     }
 
     @GetMapping("/post/byDate")
@@ -72,7 +65,6 @@ public class ApiPostController {
     @GetMapping("/post/my")
     public ResponseEntity<?> getMyPosts(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                         PostModerationRequest request) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(postService.getMyPosts(request, userDetails.getId()));
     }
 

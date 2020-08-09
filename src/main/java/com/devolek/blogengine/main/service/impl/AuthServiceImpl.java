@@ -11,9 +11,11 @@ import com.devolek.blogengine.main.enums.ERole;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.model.Role;
 import com.devolek.blogengine.main.model.User;
+import com.devolek.blogengine.main.security.jwt.JwtAuthenticationException;
 import com.devolek.blogengine.main.security.jwt.JwtTokenProvider;
 import com.devolek.blogengine.main.service.AuthService;
 import com.devolek.blogengine.main.service.CaptchaService;
+import com.devolek.blogengine.main.service.dao.GlobalSettingsDao;
 import com.devolek.blogengine.main.service.dao.PostDao;
 import com.devolek.blogengine.main.service.dao.RoleDao;
 import com.devolek.blogengine.main.service.dao.UserDao;
@@ -41,6 +43,7 @@ public class AuthServiceImpl implements AuthService {
     private final RoleDao roleDao;
     private final UserDao userDao;
     private final PostDao postDao;
+    private final GlobalSettingsDao globalSettingsDao;
     private final JwtTokenProvider jwtTokenProvider;
 
     public AuthServiceImpl(AuthenticationManager authenticationManager,
@@ -48,18 +51,22 @@ public class AuthServiceImpl implements AuthService {
                            PasswordEncoder passwordEncoder, RoleDao roleDao,
                            UserDao userDao,
                            PostDao postDao,
-                           JwtTokenProvider jwtTokenProvider) {
+                           GlobalSettingsDao globalSettingsDao, JwtTokenProvider jwtTokenProvider) {
         this.authenticationManager = authenticationManager;
         this.captchaService = captchaService;
         this.passwordEncoder = passwordEncoder;
         this.roleDao = roleDao;
         this.userDao = userDao;
         this.postDao = postDao;
+        this.globalSettingsDao = globalSettingsDao;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Override
     public Response register(SignupRequest signUpRequest) {
+        if (globalSettingsDao.getSettings().get("MULTIUSER_MODE")){
+            return UniversalResponseFactory.getFalseResponse();
+        }
         Map<String, String> errors = new HashMap<>();
         if (userDao.existsByName(signUpRequest.getName())) {
             errors.put("name", "Имя указано неверно");
@@ -106,15 +113,20 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Response checkAuth(HttpServletRequest httpServletRequest) {
         String token = jwtTokenProvider.resolveToken(httpServletRequest);
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            User user = userDao.findByEmail(jwtTokenProvider.getEmail(token));
-            int moderationCount = user.getIsModerator() == 1 ?
-                    postDao.getCountModeration(ModerationStatus.NEW, null) : 0;
-            return UniversalResponseFactory.getSingleResponse(
-                    UserResponseFactory.getAuthenticateUserResponse(
-                            user, moderationCount));
+
+        try {
+            if (token != null && jwtTokenProvider.validateToken(token)) {
+                User user = userDao.findByEmail(jwtTokenProvider.getEmail(token));
+                int moderationCount = user.getIsModerator() == 1 ?
+                        postDao.getCountModeration(ModerationStatus.NEW, null) : 0;
+                return UniversalResponseFactory.getSingleResponse(
+                        UserResponseFactory.getAuthenticateUserResponse(
+                                user, moderationCount));
+            }
+            return UniversalResponseFactory.getFalseResponse();
+        } catch (JwtAuthenticationException e) {
+            return UniversalResponseFactory.getFalseResponse();
         }
-        return UniversalResponseFactory.getFalseResponse();
     }
 
     @Override

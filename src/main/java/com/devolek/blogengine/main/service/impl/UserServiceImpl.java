@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -46,6 +43,33 @@ public class UserServiceImpl implements UserService {
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.imageService = imageService;
+    }
+
+    public static Response getStatisticResponse(List<Post> posts) {
+        if (posts == null || posts.size() == 0) {
+            return new MyStatisticResponse(0,
+                    0,
+                    0,
+                    0,
+                    new Date());
+        }
+        int postsCount = 0;
+        int likesCount = 0;
+        int dislikesCount = 0;
+        int viewsCount = 0;
+        Calendar firstPublication = Calendar.getInstance();
+        for (Post post : posts) {
+            postsCount += 1;
+            likesCount += (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 1).count();
+            dislikesCount += (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 0).count();
+            viewsCount += post.getViewCount();
+            firstPublication = post.getTime().before(firstPublication) ? post.getTime() : firstPublication;
+        }
+        return new MyStatisticResponse(postsCount,
+                likesCount,
+                dislikesCount,
+                viewsCount,
+                firstPublication.getTime());
     }
 
     @Override
@@ -106,11 +130,6 @@ public class UserServiceImpl implements UserService {
             errors.put("password", "Пароль короче 6-ти символов");
         }
 
-        if (request instanceof EditProfileWithPhotoRequest &&
-                ((EditProfileWithPhotoRequest) request).getPhoto().getSize() > 5242880) {
-            errors.put("photo", "Фото слишком большое, нужно не более 5 Мб");
-        }
-
         if (errors.size() != 0) {
             return new ErrorResponse(errors);
         }
@@ -137,24 +156,5 @@ public class UserServiceImpl implements UserService {
         User user = userDao.findById(userId);
         List<Post> posts = user.getPosts();
         return getStatisticResponse(posts);
-    }
-
-    public static Response getStatisticResponse(List<Post> posts) {
-        if (posts == null || posts.size() == 0) {
-            return new MyStatisticResponse(0, 0, 0, 0, Calendar.getInstance());
-        }
-        int postsCount = 0;
-        int likesCount = 0;
-        int dislikesCount = 0;
-        int viewsCount = 0;
-        Calendar firstPublication = Calendar.getInstance();
-        for (Post post : posts) {
-            postsCount += 1;
-            likesCount += (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 1).count();
-            dislikesCount += (int) post.getPostVotes().stream().filter(postVote -> postVote.getValue() == 0).count();
-            viewsCount += post.getViewCount();
-            firstPublication = post.getTime().before(firstPublication) ? post.getTime() : firstPublication;
-        }
-        return new MyStatisticResponse(postsCount, likesCount, dislikesCount, viewsCount, firstPublication);
     }
 }
