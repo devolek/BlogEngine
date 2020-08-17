@@ -1,7 +1,7 @@
 package com.devolek.blogengine.main.service.impl;
 
-import com.devolek.blogengine.main.dto.universal.OkResponse;
-import com.devolek.blogengine.main.dto.universal.Response;
+import com.devolek.blogengine.main.dto.response.universal.OkResponse;
+import com.devolek.blogengine.main.dto.response.universal.Response;
 import com.devolek.blogengine.main.service.GlobalService;
 import com.devolek.blogengine.main.service.dao.GlobalSettingsDao;
 import org.springframework.stereotype.Service;

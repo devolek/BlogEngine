@@ -1,6 +1,6 @@
 package com.devolek.blogengine.main.exeption;
 
-import com.devolek.blogengine.main.dto.universal.UniversalResponseFactory;
+import com.devolek.blogengine.main.dto.response.universal.UniversalResponseFactory;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -11,7 +11,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
@@ -94,9 +94,9 @@ public class ExceptionController extends ResponseEntityExceptionHandler {
         );
     }
 
-    @ExceptionHandler(value = {MultipartException.class})
+    @ExceptionHandler(value = {MaxUploadSizeExceededException.class})
     protected ResponseEntity<?> handleMaxSizeException(
-            MultipartException ex,
+            MaxUploadSizeExceededException ex,
             WebRequest request
     ) {
         log.warn(ex.getMessage());

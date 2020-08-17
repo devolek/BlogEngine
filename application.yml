@@ -6,8 +6,10 @@ spring:
   servlet:
     multipart:
       max-file-size: 5MB
-      max-request-size: 5MB
-
+      max-request-size: 128MB
+  jackson:
+    mapper:
+      default-view-inclusion: true
 jwt:
   token:
     secret: blogEngineDevolekSecretKey
@@ -15,6 +17,16 @@ jwt:
 
 upload:
   path: "C:/Users/Valet/Desktop/storage"
+
+captcha:
+  width: 100
+  height: 35
+  font-size: 20
+post:
+  title:
+    minLength: 10
+  text:
+    minLength: 500
 
 project.name: <Блог для разработчиков/>
 

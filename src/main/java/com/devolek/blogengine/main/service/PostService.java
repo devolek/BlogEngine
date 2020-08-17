@@ -1,8 +1,11 @@
 package com.devolek.blogengine.main.service;
 
-import com.devolek.blogengine.main.dto.post.request.*;
-import com.devolek.blogengine.main.dto.universal.CollectionResponse;
-import com.devolek.blogengine.main.dto.universal.Response;
+import com.devolek.blogengine.main.dto.request.post.*;
+import com.devolek.blogengine.main.dto.response.post.PostCalendarResponse;
+import com.devolek.blogengine.main.dto.response.post.PostFullResponse;
+import com.devolek.blogengine.main.dto.response.profile.MyStatisticResponse;
+import com.devolek.blogengine.main.dto.response.universal.PostListResponse;
+import com.devolek.blogengine.main.dto.response.universal.Response;
 import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.Tag;
 
@@ -12,19 +15,19 @@ import java.util.List;
 public interface PostService {
     Post findPostById(int id);
 
-    CollectionResponse getPosts(PostListRequest request);
+    PostListResponse getPosts(PostListRequest request);
 
-    CollectionResponse searchPosts(SearchPostRequest request);
+    PostListResponse searchPosts(SearchPostRequest request);
 
-    Response getPostById(int id);
+    PostFullResponse getPostById(int id);
 
-    CollectionResponse getPostsByDate(int offset, int limit, String date) throws ParseException;
+    PostListResponse getPostsByDate(int offset, int limit, String date) throws ParseException;
 
-    CollectionResponse getPostsByTag(PostByTagRequest request);
+    PostListResponse getPostsByTag(PostByTagRequest request);
 
-    CollectionResponse getPostsModeration(PostModerationRequest request, int moderatorId);
+    PostListResponse getPostsModeration(PostModerationRequest request, int moderatorId);
 
-    CollectionResponse getMyPosts(PostModerationRequest request, int userId);
+    PostListResponse getMyPosts(PostModerationRequest request, int userId);
 
     Response addPost(PostAddRequest request, int userId) throws ParseException;
 
@@ -34,7 +37,7 @@ public interface PostService {
 
     Response addPostDecision(AddModerationRequest request, int userId);
 
-    Response getCalendar(Integer year);
+    PostCalendarResponse getCalendar(Integer year);
 
     int getPostCountWithTag(Tag tag);
 
@@ -42,5 +45,5 @@ public interface PostService {
 
     List<Tag> getTagsByList(List<String> tags);
 
-    Response getStatistic(Integer userId);
+    MyStatisticResponse getStatistic(Integer userId);
 }

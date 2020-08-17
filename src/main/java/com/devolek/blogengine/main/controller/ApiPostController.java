@@ -1,9 +1,11 @@
 package com.devolek.blogengine.main.controller;
 
 
-import com.devolek.blogengine.main.dto.post.request.*;
+import com.devolek.blogengine.main.dto.request.post.*;
+import com.devolek.blogengine.main.dto.response.View;
 import com.devolek.blogengine.main.security.jwt.UserDetailsImpl;
 import com.devolek.blogengine.main.service.PostService;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,30 +25,36 @@ public class ApiPostController {
     }
 
     @GetMapping("/post")
+    @JsonView(View.USER_ID_NAME.class)
     public ResponseEntity<?> getPosts(PostListRequest request) {
         return ResponseEntity.ok(postService.getPosts(request));
     }
 
+    @JsonView(View.USER_ID_NAME.class)
     @GetMapping("/post/search")
     public ResponseEntity<?> searchPost(SearchPostRequest request) {
         return ResponseEntity.ok(postService.searchPosts(request));
     }
 
+    @JsonView(View.USER_WITH_PHOTO.class)
     @GetMapping("/post/{ID}")
     public ResponseEntity<?> getPost(@PathVariable int ID) {
         return ResponseEntity.ok(postService.getPostById(ID));
     }
 
+    @JsonView(View.USER_ID_NAME.class)
     @GetMapping("/post/byDate")
     public ResponseEntity<?> getPostByDate(int offset, int limit, String date) throws ParseException {
         return ResponseEntity.ok(postService.getPostsByDate(offset, limit, date));
     }
 
+    @JsonView(View.USER_ID_NAME.class)
     @GetMapping("/post/byTag")
     public ResponseEntity<?> getPostByTag(PostByTagRequest request) {
         return ResponseEntity.ok(postService.getPostsByTag(request));
     }
 
+    @JsonView(View.USER_ID_NAME.class)
     @Secured("ROLE_MODERATOR")
     @GetMapping("/post/moderation")
     public ResponseEntity<?> getPostModeration(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -61,6 +69,7 @@ public class ApiPostController {
         return ResponseEntity.ok(postService.addPostDecision(request, userDetails.getId()));
     }
 
+    @JsonView(View.USER_ID_NAME.class)
     @Secured("ROLE_USER")
     @GetMapping("/post/my")
     public ResponseEntity<?> getMyPosts(@AuthenticationPrincipal UserDetailsImpl userDetails,

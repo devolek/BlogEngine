@@ -1,12 +1,13 @@
 package com.devolek.blogengine.main.service.impl;
 
-import com.devolek.blogengine.main.dto.auth.request.LoginRequest;
-import com.devolek.blogengine.main.dto.auth.request.SignupRequest;
-import com.devolek.blogengine.main.dto.universal.ErrorResponse;
-import com.devolek.blogengine.main.dto.universal.OkResponse;
-import com.devolek.blogengine.main.dto.universal.Response;
-import com.devolek.blogengine.main.dto.universal.UniversalResponseFactory;
-import com.devolek.blogengine.main.dto.user.UserResponseFactory;
+import com.devolek.blogengine.main.dto.request.auth.LoginRequest;
+import com.devolek.blogengine.main.dto.request.auth.SignupRequest;
+import com.devolek.blogengine.main.dto.response.auth.LoginResponse;
+import com.devolek.blogengine.main.dto.response.universal.ErrorResponse;
+import com.devolek.blogengine.main.dto.response.universal.OkResponse;
+import com.devolek.blogengine.main.dto.response.universal.Response;
+import com.devolek.blogengine.main.dto.response.universal.UniversalResponseFactory;
+import com.devolek.blogengine.main.dto.response.user.UserResponseFactory;
 import com.devolek.blogengine.main.enums.ERole;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.model.Role;
@@ -64,10 +65,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Response register(SignupRequest signUpRequest) {
-        if (globalSettingsDao.getSettings().get("MULTIUSER_MODE")){
-            return UniversalResponseFactory.getFalseResponse();
-        }
         Map<String, String> errors = new HashMap<>();
+        if (!globalSettingsDao.getSettings().get("MULTIUSER_MODE")) {
+            errors.put("multiuser mode", "В данный момент регистрация на сайте не доступна");
+            return new ErrorResponse(errors);
+        }
         if (userDao.existsByName(signUpRequest.getName())) {
             errors.put("name", "Имя указано неверно");
         }
@@ -119,9 +121,7 @@ public class AuthServiceImpl implements AuthService {
                 User user = userDao.findByEmail(jwtTokenProvider.getEmail(token));
                 int moderationCount = user.getIsModerator() == 1 ?
                         postDao.getCountModeration(ModerationStatus.NEW, null) : 0;
-                return UniversalResponseFactory.getSingleResponse(
-                        UserResponseFactory.getAuthenticateUserResponse(
-                                user, moderationCount));
+                return UserResponseFactory.getAuthenticateUserResponse(user, moderationCount);
             }
             return UniversalResponseFactory.getFalseResponse();
         } catch (JwtAuthenticationException e) {
@@ -130,7 +130,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Response login(LoginRequest request, HttpServletResponse response) {
+    public LoginResponse login(LoginRequest request, HttpServletResponse response) {
         String email = request.getEmail();
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, request.getPassword()));

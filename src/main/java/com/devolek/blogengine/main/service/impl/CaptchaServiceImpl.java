@@ -1,7 +1,7 @@
 package com.devolek.blogengine.main.service.impl;
 
-import com.devolek.blogengine.main.dto.captha.response.CaptchaResponse;
-import com.devolek.blogengine.main.dto.universal.Response;
+import com.devolek.blogengine.main.dto.response.captcha.CaptchaResponse;
+import com.devolek.blogengine.main.dto.response.universal.Response;
 import com.devolek.blogengine.main.model.CaptchaCode;
 import com.devolek.blogengine.main.repo.CaptchaCodesRepository;
 import com.devolek.blogengine.main.service.CaptchaService;
@@ -15,15 +15,17 @@ import java.util.*;
 @Service
 public class CaptchaServiceImpl implements CaptchaService {
     private final CaptchaCodesRepository captchaCodesRepository;
+    private final CaptchaGenerator captchaGenerator;
     @Value("${captcha.expirationMs}")
     private long captchaExpirationMs;
 
-    public CaptchaServiceImpl(CaptchaCodesRepository captchaCodesRepository) {
+    public CaptchaServiceImpl(CaptchaCodesRepository captchaCodesRepository, CaptchaGenerator captchaGenerator) {
         this.captchaCodesRepository = captchaCodesRepository;
+        this.captchaGenerator = captchaGenerator;
     }
 
     @Override
-    public Response getCaptcha() throws IOException {
+    public CaptchaResponse getCaptcha() throws IOException {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(Calendar.getInstance().getTime().getTime() - captchaExpirationMs);
         List<CaptchaCode> captchaCodes = captchaCodesRepository.findExpiredCaptcha(calendar);
@@ -31,7 +33,7 @@ public class CaptchaServiceImpl implements CaptchaService {
             captchaCodesRepository.deleteAll(captchaCodes);
         }
 
-        Map<String, String> map = CaptchaGenerator.getCaptcha();
+        Map<String, String> map = captchaGenerator.getCaptcha();
         String code = map.get("secret"); //отображаемый код
         String secret = UUID.randomUUID().toString() + Base64.getEncoder().encodeToString(code.getBytes()); //уникальный код
         String image = "data:image/png;base64," + map.get("image");

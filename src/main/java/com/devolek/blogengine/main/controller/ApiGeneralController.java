@@ -1,12 +1,13 @@
 package com.devolek.blogengine.main.controller;
 
 
-import com.devolek.blogengine.main.dto.comments.request.AddCommentRequest;
-import com.devolek.blogengine.main.dto.profile.request.EditProfileWithPhotoRequest;
-import com.devolek.blogengine.main.dto.profile.request.EditProfileWithoutPhotoRequest;
-import com.devolek.blogengine.main.dto.universal.InfoResponse;
+import com.devolek.blogengine.main.dto.request.comments.AddCommentRequest;
+import com.devolek.blogengine.main.dto.request.profile.EditProfileWithPhotoRequest;
+import com.devolek.blogengine.main.dto.request.profile.EditProfileWithoutPhotoRequest;
+import com.devolek.blogengine.main.dto.response.universal.InfoResponse;
 import com.devolek.blogengine.main.security.jwt.UserDetailsImpl;
 import com.devolek.blogengine.main.service.*;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Map;
 
+@AllArgsConstructor
 @RestController
 public class ApiGeneralController {
     private final ImageService imageService;
@@ -24,17 +26,6 @@ public class ApiGeneralController {
     private final TagService tagService;
     private final PostService postService;
     private final GlobalService globalService;
-
-    public ApiGeneralController(ImageService imageService,
-                                CommentService commentService,
-                                UserService userService, TagService tagService, PostService postService, GlobalService globalService) {
-        this.imageService = imageService;
-        this.commentService = commentService;
-        this.userService = userService;
-        this.tagService = tagService;
-        this.postService = postService;
-        this.globalService = globalService;
-    }
 
     @GetMapping("/api/init")
     public ResponseEntity<?> getInit() {
@@ -87,7 +78,7 @@ public class ApiGeneralController {
     }
 
     @GetMapping("/api/statistics/my")
-    public ResponseEntity<?> getMyStatistic(@AuthenticationPrincipal UserDetailsImpl user){
+    public ResponseEntity<?> getMyStatistic(@AuthenticationPrincipal UserDetailsImpl user) {
         return ResponseEntity.ok(userService.getMyStatistic(user.getId()));
     }
 }

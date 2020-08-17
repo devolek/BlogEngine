@@ -1,13 +1,13 @@
 package com.devolek.blogengine.main.service.impl;
 
-import com.devolek.blogengine.main.dto.auth.request.ChangePasswordRequest;
-import com.devolek.blogengine.main.dto.profile.request.EditProfileRequest;
-import com.devolek.blogengine.main.dto.profile.request.EditProfileWithPhotoRequest;
-import com.devolek.blogengine.main.dto.profile.response.MyStatisticResponse;
-import com.devolek.blogengine.main.dto.universal.ErrorResponse;
-import com.devolek.blogengine.main.dto.universal.FalseResponse;
-import com.devolek.blogengine.main.dto.universal.OkResponse;
-import com.devolek.blogengine.main.dto.universal.Response;
+import com.devolek.blogengine.main.dto.request.auth.ChangePasswordRequest;
+import com.devolek.blogengine.main.dto.request.profile.EditProfileRequest;
+import com.devolek.blogengine.main.dto.request.profile.EditProfileWithPhotoRequest;
+import com.devolek.blogengine.main.dto.response.profile.MyStatisticResponse;
+import com.devolek.blogengine.main.dto.response.universal.ErrorResponse;
+import com.devolek.blogengine.main.dto.response.universal.FalseResponse;
+import com.devolek.blogengine.main.dto.response.universal.OkResponse;
+import com.devolek.blogengine.main.dto.response.universal.Response;
 import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.User;
 import com.devolek.blogengine.main.service.EmailService;
@@ -45,13 +45,13 @@ public class UserServiceImpl implements UserService {
         this.imageService = imageService;
     }
 
-    public static Response getStatisticResponse(List<Post> posts) {
+    public static MyStatisticResponse getStatisticResponse(List<Post> posts) {
         if (posts == null || posts.size() == 0) {
             return new MyStatisticResponse(0,
                     0,
                     0,
                     0,
-                    new Date());
+                    Calendar.getInstance());
         }
         int postsCount = 0;
         int likesCount = 0;
@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
                 likesCount,
                 dislikesCount,
                 viewsCount,
-                firstPublication.getTime());
+                firstPublication);
     }
 
     @Override
@@ -152,7 +152,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Response getMyStatistic(int userId) {
+    public MyStatisticResponse getMyStatistic(int userId) {
         User user = userDao.findById(userId);
         List<Post> posts = user.getPosts();
         return getStatisticResponse(posts);

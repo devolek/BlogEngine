@@ -1,15 +1,15 @@
 package com.devolek.blogengine.main.controller;
 
-import com.devolek.blogengine.main.dto.auth.request.ChangePasswordRequest;
-import com.devolek.blogengine.main.dto.auth.request.LoginRequest;
-import com.devolek.blogengine.main.dto.auth.request.RestorePasswordRequest;
-import com.devolek.blogengine.main.dto.auth.request.SignupRequest;
-import com.devolek.blogengine.main.dto.auth.response.LoginResponse;
-import com.devolek.blogengine.main.dto.universal.ErrorResponse;
-import com.devolek.blogengine.main.dto.universal.Response;
+import com.devolek.blogengine.main.dto.request.auth.ChangePasswordRequest;
+import com.devolek.blogengine.main.dto.request.auth.LoginRequest;
+import com.devolek.blogengine.main.dto.request.auth.RestorePasswordRequest;
+import com.devolek.blogengine.main.dto.request.auth.SignupRequest;
+import com.devolek.blogengine.main.dto.response.View;
+import com.devolek.blogengine.main.dto.response.auth.LoginResponse;
 import com.devolek.blogengine.main.service.AuthService;
 import com.devolek.blogengine.main.service.CaptchaService;
 import com.devolek.blogengine.main.service.UserService;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,17 +32,16 @@ public class ApiAuthController {
         this.authService = authService;
     }
 
+    @JsonView(View.USER_FULL_INFO.class)
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(HttpServletResponse response,
                                               @Valid @RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(new LoginResponse(true, authService.login(loginRequest, response)));
+        return ResponseEntity.ok(authService.login(loginRequest, response));
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signUpRequest) {
-        Response result = authService.register(signUpRequest);
-        return result instanceof ErrorResponse ?
-                ResponseEntity.badRequest().body(result) : ResponseEntity.ok(result);
+        return ResponseEntity.ok(authService.register(signUpRequest));
     }
 
     @GetMapping("/captcha")
@@ -50,6 +49,7 @@ public class ApiAuthController {
         return ResponseEntity.ok(captchaService.getCaptcha());
     }
 
+    @JsonView(View.USER_FULL_INFO.class)
     @GetMapping("/check")
     public ResponseEntity<?> checkAuth(HttpServletRequest httpServletRequest) {
         return ResponseEntity.ok(authService.checkAuth(httpServletRequest));

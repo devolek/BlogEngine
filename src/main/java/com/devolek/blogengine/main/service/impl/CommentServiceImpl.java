@@ -1,9 +1,9 @@
 package com.devolek.blogengine.main.service.impl;
 
-import com.devolek.blogengine.main.dto.comments.request.AddCommentRequest;
-import com.devolek.blogengine.main.dto.comments.response.AddCommentResponse;
-import com.devolek.blogengine.main.dto.universal.ErrorResponse;
-import com.devolek.blogengine.main.dto.universal.Response;
+import com.devolek.blogengine.main.dto.request.comments.AddCommentRequest;
+import com.devolek.blogengine.main.dto.response.comments.AddCommentResponse;
+import com.devolek.blogengine.main.dto.response.universal.ErrorResponse;
+import com.devolek.blogengine.main.dto.response.universal.Response;
 import com.devolek.blogengine.main.exeption.InvalidRequestException;
 import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.PostComment;

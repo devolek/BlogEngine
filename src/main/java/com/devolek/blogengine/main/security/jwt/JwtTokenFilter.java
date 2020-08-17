@@ -10,7 +10,9 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
@@ -35,6 +37,10 @@ public class JwtTokenFilter extends GenericFilterBean {
             }
             filterChain.doFilter(servletRequest, servletResponse);
         } catch (JwtAuthenticationException | UserNotFoundException ex) {
+            HttpServletResponse response = (HttpServletResponse) servletResponse;
+            Cookie cookie = new Cookie("Authorization", null);
+            cookie.setPath("/");
+            response.addCookie(cookie);
             log.warn(ex.getMessage());
         }
 

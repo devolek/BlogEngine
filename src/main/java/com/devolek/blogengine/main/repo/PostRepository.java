@@ -56,15 +56,15 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
 
     @Query(value = "select p from Post p where " +
             defaultCondition +
-            " and (:query is null or p.title like %:query%) or " +
-            "p.text like %:query% " +
+            " and ((:query is null or p.title like %:query%) or " +
+            "p.text like %:query%) " +
             "order by p.time desc")
     List<Post> search(@Param("query") String query, Pageable pageable);
 
     @Query(value = "select count (p) from Post p where " +
             defaultCondition +
-            " and (:query is null or p.title like %:query%) or " +
-            "p.text like %:query% " +
+            " and ((:query is null or p.title like %:query%) or " +
+            "p.text like %:query%) " +
             "order by p.time desc")
     int searchCount(@Param("query") String query);
 

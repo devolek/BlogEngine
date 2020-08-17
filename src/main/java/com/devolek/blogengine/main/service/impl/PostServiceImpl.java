@@ -1,10 +1,11 @@
 package com.devolek.blogengine.main.service.impl;
 
-import com.devolek.blogengine.main.dto.post.PostResponseFactory;
-import com.devolek.blogengine.main.dto.post.request.*;
-import com.devolek.blogengine.main.dto.post.response.PostCalendarResponse;
-import com.devolek.blogengine.main.dto.profile.response.MyStatisticResponse;
-import com.devolek.blogengine.main.dto.universal.*;
+import com.devolek.blogengine.main.dto.response.post.PostFullResponse;
+import com.devolek.blogengine.main.dto.response.post.PostResponseFactory;
+import com.devolek.blogengine.main.dto.response.post.PostCalendarResponse;
+import com.devolek.blogengine.main.dto.response.profile.MyStatisticResponse;
+import com.devolek.blogengine.main.dto.request.post.*;
+import com.devolek.blogengine.main.dto.response.universal.*;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.exeption.NotFoundException;
 import com.devolek.blogengine.main.model.Post;
@@ -18,6 +19,7 @@ import com.devolek.blogengine.main.service.PostService;
 import com.devolek.blogengine.main.service.dao.GlobalSettingsDao;
 import com.devolek.blogengine.main.service.dao.UserDao;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,6 +37,12 @@ public class PostServiceImpl implements PostService {
     private final TagRepository tagRepository;
     private final GlobalSettingsDao globalSettingsDao;
     private final UserDao userDao;
+
+    @Value("${post.text.minLength}")
+    private int textMinLength;
+    @Value("${post.title.minLength}")
+    private int titleMinLength;
+
 
     public PostServiceImpl(PostVotesRepository postVotesRepository,
                            PostRepository postRepository,
@@ -54,7 +62,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public CollectionResponse getPosts(PostListRequest request) {
+    public PostListResponse getPosts(PostListRequest request) {
         int count = postRepository.getAvailablePostCount();
         int page = request.getOffset() / request.getLimit();
         List<Post> posts = new ArrayList<>();
@@ -82,7 +90,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public CollectionResponse searchPosts(SearchPostRequest request) {
+    public PostListResponse searchPosts(SearchPostRequest request) {
         int count = postRepository.searchCount(request.getQuery());
         int page = request.getOffset() / request.getLimit();
         List<Post> posts = postRepository.search(request.getQuery(), PageRequest.of(page, request.getLimit()));
@@ -90,7 +98,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Response getPostById(int id) {
+    public PostFullResponse getPostById(int id) {
         Post post = postRepository.findById(id).orElse(null);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -111,7 +119,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public CollectionResponse getPostsByDate(int offset, int limit, String date) throws ParseException {
+    public PostListResponse getPostsByDate(int offset, int limit, String date) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar dateFrom = Calendar.getInstance();
         Calendar dateTo = Calendar.getInstance();
@@ -127,7 +135,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public CollectionResponse getPostsByTag(PostByTagRequest request) {
+    public PostListResponse getPostsByTag(PostByTagRequest request) {
         int count = postRepository.getCountByTag(request.getTag());
         int page = request.getOffset() / request.getLimit();
         List<Post> posts = postRepository.getByTag(request.getTag(), PageRequest.of(page, request.getLimit()));
@@ -135,7 +143,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public CollectionResponse getPostsModeration(PostModerationRequest request, int moderatorId) {
+    public PostListResponse getPostsModeration(PostModerationRequest request, int moderatorId) {
         ModerationStatus status = ModerationStatus.NEW;
         Integer moderator = null;
         switch (request.getStatus()) {
@@ -163,7 +171,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public CollectionResponse getMyPosts(PostModerationRequest request, int userId) {
+    public PostListResponse getMyPosts(PostModerationRequest request, int userId) {
         ModerationStatus status = ModerationStatus.NEW;
         int isActive = 1;
         switch (request.getStatus()) {
@@ -290,14 +298,14 @@ public class PostServiceImpl implements PostService {
         HashMap<String, String> errors = new HashMap<>();
         if (request.getTitle().isEmpty()) {
             errors.put("title", "Заголовок не установлен");
-        } else if (request.getTitle().length() < 10) {
-            errors.put("title", "Заголовок слишком короткий");
+        } else if (request.getTitle().length() < titleMinLength) {
+            errors.put("title", "Заголовок слишком короткий, введите не менее 10 символов");
         }
 
         if (request.getText().isEmpty()) {
             errors.put("text", "Текст публикации не установлен");
-        } else if (request.getText().length() < 500) {
-            errors.put("text", "Текст публикации слишком короткий");
+        } else if (request.getText().length() < textMinLength) {
+            errors.put("text", "Текст публикации слишком короткий, введите не менее 500 символов");
         }
         if (errors.size() != 0) {
             return new ErrorResponse(errors);
@@ -328,7 +336,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Response getCalendar(Integer year) {
+    public PostCalendarResponse getCalendar(Integer year) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar now = Calendar.getInstance();
         Calendar before = Calendar.getInstance();
@@ -379,7 +387,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Response getStatistic(Integer userId) {
+    public MyStatisticResponse getStatistic(Integer userId) {
 
         if (!globalSettingsDao.getSettings().get("STATISTICS_IS_PUBLIC") &&
                 userDao.findById(userId).getIsModerator() != 1) {
@@ -387,7 +395,7 @@ public class PostServiceImpl implements PostService {
                     0,
                     0,
                     0,
-                    new Date());
+                    Calendar.getInstance());
         }
         List<Post> posts = postRepository.getAvailablePosts(null, null);
         return UserServiceImpl.getStatisticResponse(posts);
