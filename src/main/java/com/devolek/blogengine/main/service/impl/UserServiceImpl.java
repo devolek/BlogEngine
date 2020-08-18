@@ -5,9 +5,8 @@ import com.devolek.blogengine.main.dto.request.profile.EditProfileRequest;
 import com.devolek.blogengine.main.dto.request.profile.EditProfileWithPhotoRequest;
 import com.devolek.blogengine.main.dto.response.profile.MyStatisticResponse;
 import com.devolek.blogengine.main.dto.response.universal.ErrorResponse;
-import com.devolek.blogengine.main.dto.response.universal.FalseResponse;
-import com.devolek.blogengine.main.dto.response.universal.OkResponse;
 import com.devolek.blogengine.main.dto.response.universal.Response;
+import com.devolek.blogengine.main.dto.response.universal.UniversalResponseFactory;
 import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.User;
 import com.devolek.blogengine.main.service.EmailService;
@@ -15,16 +14,20 @@ import com.devolek.blogengine.main.service.ImageService;
 import com.devolek.blogengine.main.service.UserService;
 import com.devolek.blogengine.main.service.dao.UserDao;
 import com.devolek.blogengine.main.util.CodeGenerator;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.*;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+@AllArgsConstructor
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
@@ -34,16 +37,6 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final ImageService imageService;
-
-    @Autowired
-    public UserServiceImpl(UserDao userDao, CaptchaServiceImpl captchaService,
-                           PasswordEncoder passwordEncoder, EmailService emailService, ImageService imageService) {
-        this.userDao = userDao;
-        this.captchaService = captchaService;
-        this.passwordEncoder = passwordEncoder;
-        this.emailService = emailService;
-        this.imageService = imageService;
-    }
 
     public static MyStatisticResponse getStatisticResponse(List<Post> posts) {
         if (posts == null || posts.size() == 0) {
@@ -84,9 +77,9 @@ public class UserServiceImpl implements UserService {
                             ":" + request.getServerPort() +
                             "/login/change-password/" + code);
             log.info("User {} requested password recovery, confirmation email was sent", email);
-            return new OkResponse();
+            return UniversalResponseFactory.getTrueResponse();
         } catch (UsernameNotFoundException e) {
-            return new FalseResponse();
+            return UniversalResponseFactory.getFalseResponse();
         }
     }
 
@@ -111,7 +104,7 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userDao.save(user);
-        return new OkResponse();
+        return UniversalResponseFactory.getTrueResponse();
     }
 
     @Override
@@ -148,7 +141,7 @@ public class UserServiceImpl implements UserService {
         }
         userDao.save(user);
 
-        return new OkResponse();
+        return UniversalResponseFactory.getTrueResponse();
     }
 
     @Override

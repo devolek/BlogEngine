@@ -4,7 +4,6 @@ import com.devolek.blogengine.main.dto.request.auth.LoginRequest;
 import com.devolek.blogengine.main.dto.request.auth.SignupRequest;
 import com.devolek.blogengine.main.dto.response.auth.LoginResponse;
 import com.devolek.blogengine.main.dto.response.universal.ErrorResponse;
-import com.devolek.blogengine.main.dto.response.universal.OkResponse;
 import com.devolek.blogengine.main.dto.response.universal.Response;
 import com.devolek.blogengine.main.dto.response.universal.UniversalResponseFactory;
 import com.devolek.blogengine.main.dto.response.user.UserResponseFactory;
@@ -12,14 +11,15 @@ import com.devolek.blogengine.main.enums.ERole;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.model.Role;
 import com.devolek.blogengine.main.model.User;
+import com.devolek.blogengine.main.repo.PostRepository;
+import com.devolek.blogengine.main.repo.RoleRepository;
 import com.devolek.blogengine.main.security.jwt.JwtAuthenticationException;
 import com.devolek.blogengine.main.security.jwt.JwtTokenProvider;
 import com.devolek.blogengine.main.service.AuthService;
 import com.devolek.blogengine.main.service.CaptchaService;
 import com.devolek.blogengine.main.service.dao.GlobalSettingsDao;
-import com.devolek.blogengine.main.service.dao.PostDao;
-import com.devolek.blogengine.main.service.dao.RoleDao;
 import com.devolek.blogengine.main.service.dao.UserDao;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -35,33 +35,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@AllArgsConstructor
 @Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final CaptchaService captchaService;
     private final PasswordEncoder passwordEncoder;
-    private final RoleDao roleDao;
+    private final RoleRepository roleRepository;
     private final UserDao userDao;
-    private final PostDao postDao;
+    private final PostRepository postRepository;
     private final GlobalSettingsDao globalSettingsDao;
     private final JwtTokenProvider jwtTokenProvider;
-
-    public AuthServiceImpl(AuthenticationManager authenticationManager,
-                           CaptchaService captchaService,
-                           PasswordEncoder passwordEncoder, RoleDao roleDao,
-                           UserDao userDao,
-                           PostDao postDao,
-                           GlobalSettingsDao globalSettingsDao, JwtTokenProvider jwtTokenProvider) {
-        this.authenticationManager = authenticationManager;
-        this.captchaService = captchaService;
-        this.passwordEncoder = passwordEncoder;
-        this.roleDao = roleDao;
-        this.userDao = userDao;
-        this.postDao = postDao;
-        this.globalSettingsDao = globalSettingsDao;
-        this.jwtTokenProvider = jwtTokenProvider;
-    }
 
     @Override
     public Response register(SignupRequest signUpRequest) {
@@ -94,14 +79,14 @@ public class AuthServiceImpl implements AuthService {
         user.setName(signUpRequest.getName());
         user.setEmail(signUpRequest.getEmail());
         user.setPassword(signUpRequest.getPassword());
-        Role roleUser = roleDao.findByRole(ERole.ROLE_USER);
+        Role roleUser = roleRepository.findByRole(ERole.ROLE_USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setPhoto("/default-1.png");
         user.setRoles(Collections.singleton(roleUser));
         user.setIsModerator(0);
         userDao.save(user);
         log.info("IN register - user: {} successfully registered", user.getEmail());
-        return new OkResponse();
+        return UniversalResponseFactory.getTrueResponse();
     }
 
     @Override
@@ -109,7 +94,7 @@ public class AuthServiceImpl implements AuthService {
         Cookie cookie = new Cookie("Authorization", null);
         cookie.setPath("/");
         response.addCookie(cookie);
-        return new OkResponse();
+        return UniversalResponseFactory.getTrueResponse();
     }
 
     @Override
@@ -120,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
             if (token != null && jwtTokenProvider.validateToken(token)) {
                 User user = userDao.findByEmail(jwtTokenProvider.getEmail(token));
                 int moderationCount = user.getIsModerator() == 1 ?
-                        postDao.getCountModeration(ModerationStatus.NEW, null) : 0;
+                        postRepository.getCountModeration(ModerationStatus.NEW, null) : 0;
                 return UserResponseFactory.getAuthenticateUserResponse(user, moderationCount);
             }
             return UniversalResponseFactory.getFalseResponse();
@@ -142,7 +127,7 @@ public class AuthServiceImpl implements AuthService {
             response.addCookie(cookie);
 
             int moderationCount = user.getIsModerator() == 1 ?
-                    postDao.getCountModeration(ModerationStatus.NEW, null) : 0;
+                    postRepository.getCountModeration(ModerationStatus.NEW, null) : 0;
 
             return UserResponseFactory.getAuthenticateUserResponse(user, moderationCount);
 

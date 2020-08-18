@@ -5,11 +5,11 @@ import java.util.Map;
 
 public class UniversalResponseFactory {
     public static Response getTrueResponse() {
-        return new OkResponse();
+        return new SimpleResponse(true);
     }
 
     public static Response getFalseResponse() {
-        return new OkResponse(false);
+        return new SimpleResponse(false);
     }
 
     public static Response getFileMaxSizeResponse() {

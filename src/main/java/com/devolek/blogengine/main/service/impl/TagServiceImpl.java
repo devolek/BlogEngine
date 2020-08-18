@@ -8,22 +8,19 @@ import com.devolek.blogengine.main.model.Tag;
 import com.devolek.blogengine.main.repo.TagRepository;
 import com.devolek.blogengine.main.service.PostService;
 import com.devolek.blogengine.main.service.TagService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
 @Service
 @Slf4j
 public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
     private final PostService postService;
-
-    public TagServiceImpl(TagRepository tagRepository, PostService postService) {
-        this.tagRepository = tagRepository;
-        this.postService = postService;
-    }
 
     @Override
     public Response getTagList(String query) {

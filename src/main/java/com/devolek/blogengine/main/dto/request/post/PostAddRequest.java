@@ -6,7 +6,7 @@ import java.util.List;
 
 @Data
 public class PostAddRequest {
-    private long time;
+    private long timestamp;
     private int active;
     private String title;
     private String text;

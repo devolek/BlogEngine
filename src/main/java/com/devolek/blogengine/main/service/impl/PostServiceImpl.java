@@ -1,10 +1,10 @@
 package com.devolek.blogengine.main.service.impl;
 
+import com.devolek.blogengine.main.dto.request.post.*;
+import com.devolek.blogengine.main.dto.response.post.PostCalendarResponse;
 import com.devolek.blogengine.main.dto.response.post.PostFullResponse;
 import com.devolek.blogengine.main.dto.response.post.PostResponseFactory;
-import com.devolek.blogengine.main.dto.response.post.PostCalendarResponse;
 import com.devolek.blogengine.main.dto.response.profile.MyStatisticResponse;
-import com.devolek.blogengine.main.dto.request.post.*;
 import com.devolek.blogengine.main.dto.response.universal.*;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.exeption.NotFoundException;
@@ -20,6 +20,7 @@ import com.devolek.blogengine.main.service.dao.GlobalSettingsDao;
 import com.devolek.blogengine.main.service.dao.UserDao;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -63,24 +65,32 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostListResponse getPosts(PostListRequest request) {
-        int count = postRepository.getAvailablePostCount();
+        int count = 0;
         int page = request.getOffset() / request.getLimit();
         List<Post> posts = new ArrayList<>();
         switch (request.getMode()) {
             case "recent": {
-                posts = postRepository.getRecentPosts(PageRequest.of(page, request.getLimit()));
+                Page<Post> postsPage = postRepository.getRecentPosts(PageRequest.of(page, request.getLimit()));
+                count = (int) postsPage.getTotalElements();
+                posts = postsPage.get().collect(Collectors.toList());
                 break;
             }
             case "popular": {
-                posts = postRepository.getPopularPosts(PageRequest.of(page, request.getLimit()));
+                Page<Post> postsPage = postRepository.getPopularPosts(PageRequest.of(page, request.getLimit()));
+                count = (int) postsPage.getTotalElements();
+                posts = postsPage.get().collect(Collectors.toList());
                 break;
             }
             case "best": {
-                posts = postRepository.getBestPosts(PageRequest.of(page, request.getLimit()));
+                Page<Post> postsPage = postRepository.getBestPosts(PageRequest.of(page, request.getLimit()));
+                count = (int) postsPage.getTotalElements();
+                posts = postsPage.get().collect(Collectors.toList());
                 break;
             }
             case "early": {
-                posts = postRepository.getEarlyPosts(PageRequest.of(page, request.getLimit()));
+                Page<Post> postsPage = postRepository.getEarlyPosts(PageRequest.of(page, request.getLimit()));
+                count = (int) postsPage.getTotalElements();
+                posts = postsPage.get().collect(Collectors.toList());
                 break;
             }
             default:
@@ -91,9 +101,10 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostListResponse searchPosts(SearchPostRequest request) {
-        int count = postRepository.searchCount(request.getQuery());
         int page = request.getOffset() / request.getLimit();
-        List<Post> posts = postRepository.search(request.getQuery(), PageRequest.of(page, request.getLimit()));
+        Page<Post> postsPage = postRepository.search(request.getQuery(), PageRequest.of(page, request.getLimit()));
+        int count = (int) postsPage.getTotalElements();
+        List<Post> posts = postsPage.get().collect(Collectors.toList());
         return PostResponseFactory.getPostsList(posts, count);
     }
 
@@ -129,16 +140,18 @@ public class PostServiceImpl implements PostService {
         dateTo.add(Calendar.DAY_OF_MONTH, 1);
 
         int page = offset / limit;
-        int count = postRepository.getCountByDate(dateFrom, dateTo);
-        List<Post> posts = postRepository.getByDate(dateFrom, dateTo, PageRequest.of(page, limit));
+        Page<Post> postsPage = postRepository.getByDate(dateFrom, dateTo, PageRequest.of(page, limit));
+        int count = (int) postsPage.getTotalElements();
+        List<Post> posts = postsPage.get().collect(Collectors.toList());
         return PostResponseFactory.getPostsList(posts, count);
     }
 
     @Override
     public PostListResponse getPostsByTag(PostByTagRequest request) {
-        int count = postRepository.getCountByTag(request.getTag());
         int page = request.getOffset() / request.getLimit();
-        List<Post> posts = postRepository.getByTag(request.getTag(), PageRequest.of(page, request.getLimit()));
+        Page<Post> postsPage = postRepository.getByTag(request.getTag(), PageRequest.of(page, request.getLimit()));
+        int count = (int) postsPage.getTotalElements();
+        List<Post> posts = postsPage.get().collect(Collectors.toList());
         return PostResponseFactory.getPostsList(posts, count);
     }
 
@@ -164,9 +177,10 @@ public class PostServiceImpl implements PostService {
             default:
                 break;
         }
-        int count = postRepository.getCountModeration(status, moderator);
         int page = request.getOffset() / request.getLimit();
-        List<Post> posts = postRepository.getModerationPosts(status, moderator, PageRequest.of(page, request.getLimit()));
+        Page<Post> postsPage = postRepository.getModerationPosts(status, moderator, PageRequest.of(page, request.getLimit()));
+        int count = (int) postsPage.getTotalElements();
+        List<Post> posts = postsPage.get().collect(Collectors.toList());
         return PostResponseFactory.getPostsList(posts, count);
     }
 
@@ -195,17 +209,18 @@ public class PostServiceImpl implements PostService {
                 break;
         }
 
-        int count = postRepository.getCountMyPost(status, isActive, userId);
         int page = request.getOffset() / request.getLimit();
-        List<Post> posts = postRepository.getMyPosts(status, isActive,
+        Page<Post> postsPage = postRepository.getMyPosts(status, isActive,
                 userId, PageRequest.of(page, request.getLimit()));
+        int count = (int) postsPage.getTotalElements();
+        List<Post> posts = postsPage.get().collect(Collectors.toList());
         return PostResponseFactory.getPostsList(posts, count);
     }
 
     @Override
     public Response addPost(PostAddRequest request, int userId) {
         Calendar date = Calendar.getInstance();
-        date.setTimeInMillis(request.getTime() * 1000);
+        date.setTimeInMillis(request.getTimestamp() * 1000);
 
         Response error = checkPostRequest(request);
         if (error != null) {
@@ -213,11 +228,11 @@ public class PostServiceImpl implements PostService {
         }
 
         Post newPost = new Post();
-        newPost.setTime(date.before(Calendar.getInstance()) ? Calendar.getInstance() : date);
+        newPost.setTime(date.before(Calendar.getInstance()) ?
+                Calendar.getInstance() : date);
         newPost.setIsActive(request.getActive());
         newPost.setTitle(request.getTitle());
         newPost.setText(request.getText());
-
 
 
         newPost.setModerationStatus(
@@ -232,7 +247,7 @@ public class PostServiceImpl implements PostService {
 
         postRepository.save(newPost);
 
-        return new OkResponse();
+        return UniversalResponseFactory.getTrueResponse();
     }
 
     @Override
@@ -242,7 +257,7 @@ public class PostServiceImpl implements PostService {
         PostVote vote = postVotesRepository.findByUserAndPost(user, post);
         if (vote != null) {
             if (vote.getValue() == value) {
-                return new OkResponse(false);
+                return new SimpleResponse(false);
             } else postVotesRepository.delete(vote);
         }
 
@@ -252,7 +267,7 @@ public class PostServiceImpl implements PostService {
         vote.setTime(Calendar.getInstance());
         vote.setValue(value);
         postVotesRepository.save(vote);
-        return new OkResponse();
+        return UniversalResponseFactory.getTrueResponse();
     }
 
     @Override
@@ -260,7 +275,7 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId).orElse(null);
         User user = userDao.findById(userId);
         if (post == null || user == null) {
-            return new OkResponse(false);
+            return new SimpleResponse(false);
         }
 
         Response error = checkPostRequest(request);
@@ -274,15 +289,16 @@ public class PostServiceImpl implements PostService {
                             ModerationStatus.NEW : ModerationStatus.ACCEPTED);
         }
         Calendar date = Calendar.getInstance();
-        date.setTimeInMillis(request.getTime() * 1000);
+        date.setTimeInMillis(request.getTimestamp() * 1000);
 
-        post.setTime(date.before(Calendar.getInstance()) ? Calendar.getInstance() : date);
+        post.setTime(date.before(Calendar.getInstance()) ?
+                Calendar.getInstance() : date);
         post.setIsActive(request.getActive());
         post.setTitle(request.getTitle());
         post.setText(request.getText());
         post.setTags(getTagsByList(request.getTags()));
         postRepository.save(post);
-        return new OkResponse();
+        return UniversalResponseFactory.getTrueResponse();
     }
 
     @Override
@@ -299,13 +315,13 @@ public class PostServiceImpl implements PostService {
         if (request.getTitle().isEmpty()) {
             errors.put("title", "Заголовок не установлен");
         } else if (request.getTitle().length() < titleMinLength) {
-            errors.put("title", "Заголовок слишком короткий, введите не менее 10 символов");
+            errors.put("title", "Заголовок слишком короткий, введите не менее " + titleMinLength + "символов");
         }
 
         if (request.getText().isEmpty()) {
             errors.put("text", "Текст публикации не установлен");
         } else if (request.getText().length() < textMinLength) {
-            errors.put("text", "Текст публикации слишком короткий, введите не менее 500 символов");
+            errors.put("text", "Текст публикации слишком короткий, введите не менее " + textMinLength + " символов");
         }
         if (errors.size() != 0) {
             return new ErrorResponse(errors);
@@ -317,7 +333,7 @@ public class PostServiceImpl implements PostService {
     public Response addPostDecision(AddModerationRequest request, int userId) {
         Post post = findPostById(request.getPostId());
         if (post == null) {
-            return new FalseResponse();
+            return UniversalResponseFactory.getFalseResponse();
         }
         post.setModeratorId(userId);
         switch (request.getDecision()) {
@@ -332,7 +348,7 @@ public class PostServiceImpl implements PostService {
         }
         postRepository.save(post);
 
-        return new OkResponse();
+        return UniversalResponseFactory.getTrueResponse();
     }
 
     @Override

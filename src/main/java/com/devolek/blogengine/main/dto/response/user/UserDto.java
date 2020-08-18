@@ -8,10 +8,10 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class UserDto {
-    @JsonView(View.USER_ID_NAME.class)
+    @JsonView({View.POST_LIST.class, View.USER_ID_NAME.class})
     private int id;
 
-    @JsonView(View.USER_ID_NAME.class)
+    @JsonView({View.POST_LIST.class, View.USER_ID_NAME.class})
     private String name;
 
     @JsonView(View.USER_WITH_PHOTO.class)

@@ -12,22 +12,18 @@ import com.devolek.blogengine.main.repo.CommentRepository;
 import com.devolek.blogengine.main.service.CommentService;
 import com.devolek.blogengine.main.service.PostService;
 import com.devolek.blogengine.main.service.dao.UserDao;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
 import java.util.HashMap;
 
+@AllArgsConstructor
 @Service
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final PostService postService;
     private final UserDao userDao;
-
-    public CommentServiceImpl(CommentRepository commentRepository, PostService postService, UserDao userDao) {
-        this.commentRepository = commentRepository;
-        this.postService = postService;
-        this.userDao = userDao;
-    }
 
     @Override
     public PostComment findById(int id) {

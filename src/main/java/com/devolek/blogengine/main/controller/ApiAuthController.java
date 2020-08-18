@@ -5,11 +5,11 @@ import com.devolek.blogengine.main.dto.request.auth.LoginRequest;
 import com.devolek.blogengine.main.dto.request.auth.RestorePasswordRequest;
 import com.devolek.blogengine.main.dto.request.auth.SignupRequest;
 import com.devolek.blogengine.main.dto.response.View;
-import com.devolek.blogengine.main.dto.response.auth.LoginResponse;
 import com.devolek.blogengine.main.service.AuthService;
 import com.devolek.blogengine.main.service.CaptchaService;
 import com.devolek.blogengine.main.service.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/auth")
 public class ApiAuthController {
@@ -25,12 +26,6 @@ public class ApiAuthController {
     private final UserService userService;
     private final CaptchaService captchaService;
     private final AuthService authService;
-
-    public ApiAuthController(UserService userService, CaptchaService captchaService, AuthService authService) {
-        this.userService = userService;
-        this.captchaService = captchaService;
-        this.authService = authService;
-    }
 
     @JsonView(View.USER_FULL_INFO.class)
     @PostMapping("/login")

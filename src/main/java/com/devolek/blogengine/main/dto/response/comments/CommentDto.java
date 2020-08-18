@@ -15,7 +15,7 @@ public class CommentDto {
     private int id;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     @JsonSerialize(using = CalendarToSecondsSerializer.class)
-    private Calendar time;
+    private Calendar timestamp;
     private String text;
     private UserDto user;
 }
