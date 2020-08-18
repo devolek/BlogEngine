@@ -24,7 +24,7 @@ jwt:
     expired: 86400000
 
 upload:
-  path: "C:/Users/Valet/Desktop/storage"
+  path: "/"
 
 captcha:
   width: 100
