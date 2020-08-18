@@ -1,10 +1,9 @@
-spring.datasource.url: jdbc:${CLEARDB_DATABASE_URL:mysql://localhost:3306/blog_engine?createDatabaseIfNotExist=true&useUnicode=true&useSSL=false&serverTimezone=UTC&characterEncoding=utf8}
-spring.datasource.username: root
-spring.datasource.password: testtest
-spring.jpa.hibernate.ddl-auto: none
-server:
-  port: ${PORT:8080}
 spring:
+  datasource:
+    url: jdbc:${CLEARDB_DATABASE_URL:mysql://localhost:3306/blog_engine?createDatabaseIfNotExist=true&useUnicode=true&useSSL=false&serverTimezone=UTC&characterEncoding=utf8}
+    username: root
+    password: testtest
+  jpa.hibernate.ddl-auto: none
   servlet:
     multipart:
       max-file-size: 5MB
@@ -17,6 +16,8 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+server:
+  port: ${PORT:8080}
 jwt:
   token:
     secret: blogEngineDevolekSecretKey
