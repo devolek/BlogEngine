@@ -12,7 +12,7 @@ import java.util.Calendar;
 
 @Data
 @AllArgsConstructor
-public class MyStatisticResponse implements Response {
+public class StatisticResponse implements Response {
     private int postsCount;
     private int likesCount;
     private int dislikesCount;

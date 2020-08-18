@@ -1,14 +1,12 @@
 package com.devolek.blogengine.main.dto.response.post;
 
 import com.devolek.blogengine.main.dto.response.comments.CommentDto;
-import com.devolek.blogengine.main.dto.response.universal.PostListResponse;
 import com.devolek.blogengine.main.dto.response.user.UserResponseFactory;
 import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.PostComment;
 import com.devolek.blogengine.main.model.Tag;
 import org.jsoup.Jsoup;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 

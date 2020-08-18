@@ -3,8 +3,9 @@ package com.devolek.blogengine.main.service.impl;
 import com.devolek.blogengine.main.dto.request.post.*;
 import com.devolek.blogengine.main.dto.response.post.PostCalendarResponse;
 import com.devolek.blogengine.main.dto.response.post.PostFullResponse;
+import com.devolek.blogengine.main.dto.response.post.PostListResponse;
 import com.devolek.blogengine.main.dto.response.post.PostResponseFactory;
-import com.devolek.blogengine.main.dto.response.profile.MyStatisticResponse;
+import com.devolek.blogengine.main.dto.response.profile.StatisticResponse;
 import com.devolek.blogengine.main.dto.response.universal.*;
 import com.devolek.blogengine.main.enums.ModerationStatus;
 import com.devolek.blogengine.main.exeption.NotFoundException;
@@ -403,11 +404,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public MyStatisticResponse getStatistic(Integer userId) {
+    public StatisticResponse getStatistic(Integer userId) {
 
         if (!globalSettingsDao.getSettings().get("STATISTICS_IS_PUBLIC") &&
                 userDao.findById(userId).getIsModerator() != 1) {
-            return new MyStatisticResponse(0,
+            return new StatisticResponse(0,
                     0,
                     0,
                     0,

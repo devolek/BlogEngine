@@ -3,7 +3,7 @@ package com.devolek.blogengine.main.service.impl;
 import com.devolek.blogengine.main.dto.request.auth.ChangePasswordRequest;
 import com.devolek.blogengine.main.dto.request.profile.EditProfileRequest;
 import com.devolek.blogengine.main.dto.request.profile.EditProfileWithPhotoRequest;
-import com.devolek.blogengine.main.dto.response.profile.MyStatisticResponse;
+import com.devolek.blogengine.main.dto.response.profile.StatisticResponse;
 import com.devolek.blogengine.main.dto.response.universal.ErrorResponse;
 import com.devolek.blogengine.main.dto.response.universal.Response;
 import com.devolek.blogengine.main.dto.response.universal.UniversalResponseFactory;
@@ -38,9 +38,9 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final ImageService imageService;
 
-    public static MyStatisticResponse getStatisticResponse(List<Post> posts) {
+    public static StatisticResponse getStatisticResponse(List<Post> posts) {
         if (posts == null || posts.size() == 0) {
-            return new MyStatisticResponse(0,
+            return new StatisticResponse(0,
                     0,
                     0,
                     0,
@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
             viewsCount += post.getViewCount();
             firstPublication = post.getTime().before(firstPublication) ? post.getTime() : firstPublication;
         }
-        return new MyStatisticResponse(postsCount,
+        return new StatisticResponse(postsCount,
                 likesCount,
                 dislikesCount,
                 viewsCount,
@@ -145,7 +145,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public MyStatisticResponse getMyStatistic(int userId) {
+    public StatisticResponse getMyStatistic(int userId) {
         User user = userDao.findById(userId);
         List<Post> posts = user.getPosts();
         return getStatisticResponse(posts);

@@ -2,7 +2,7 @@ package com.devolek.blogengine.main.service.impl;
 
 import com.devolek.blogengine.main.dto.response.tag.TagDto;
 import com.devolek.blogengine.main.dto.response.tag.TagResponseFactory;
-import com.devolek.blogengine.main.dto.response.universal.PostListResponse;
+import com.devolek.blogengine.main.dto.response.post.PostListResponse;
 import com.devolek.blogengine.main.dto.response.universal.Response;
 import com.devolek.blogengine.main.model.Tag;
 import com.devolek.blogengine.main.repo.TagRepository;

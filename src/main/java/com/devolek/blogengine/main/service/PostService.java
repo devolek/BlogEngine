@@ -3,8 +3,8 @@ package com.devolek.blogengine.main.service;
 import com.devolek.blogengine.main.dto.request.post.*;
 import com.devolek.blogengine.main.dto.response.post.PostCalendarResponse;
 import com.devolek.blogengine.main.dto.response.post.PostFullResponse;
-import com.devolek.blogengine.main.dto.response.profile.MyStatisticResponse;
-import com.devolek.blogengine.main.dto.response.universal.PostListResponse;
+import com.devolek.blogengine.main.dto.response.profile.StatisticResponse;
+import com.devolek.blogengine.main.dto.response.post.PostListResponse;
 import com.devolek.blogengine.main.dto.response.universal.Response;
 import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.Tag;
@@ -45,5 +45,5 @@ public interface PostService {
 
     List<Tag> getTagsByList(List<String> tags);
 
-    MyStatisticResponse getStatistic(Integer userId);
+    StatisticResponse getStatistic(Integer userId);
 }
