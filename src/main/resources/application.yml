@@ -24,7 +24,7 @@ jwt:
     expired: 86400000
 
 upload:
-  path: ${UPLOAD_PATH}
+  path: @root.path@
 
 captcha:
   width: 100
