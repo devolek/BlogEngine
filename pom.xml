@@ -54,6 +54,7 @@
             <artifactId>liquibase-maven-plugin</artifactId>
             <version>3.8.9</version>
             <configuration>
+                <promptOnNonLocalDatabase>false</promptOnNonLocalDatabase>
                 <propertyFile>src/main/resources/liquibase-maven-plugin.properties</propertyFile>
                 <systemProperties>
                     <user.name>devolek</user.name>
