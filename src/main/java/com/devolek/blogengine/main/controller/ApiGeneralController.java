@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
@@ -66,15 +67,15 @@ public class ApiGeneralController {
     }
 
     @PostMapping(path = "/api/profile/my", consumes = "application/json")
-    public ResponseEntity<?> editProfile(@AuthenticationPrincipal UserDetailsImpl user,
+    public ResponseEntity<?> editProfile(HttpServletResponse response, @AuthenticationPrincipal UserDetailsImpl user,
                                          @RequestBody EditProfileWithoutPhotoRequest request) throws IOException {
-        return ResponseEntity.ok(userService.editProfile(user.getId(), request));
+        return ResponseEntity.ok(userService.editProfile(user.getId(), request, response));
     }
 
     @PostMapping(path = "/api/profile/my", consumes = "multipart/form-data")
-    public ResponseEntity<?> editProfileWithPhoto(@AuthenticationPrincipal UserDetailsImpl user,
+    public ResponseEntity<?> editProfileWithPhoto(HttpServletResponse response, @AuthenticationPrincipal UserDetailsImpl user,
                                                   EditProfileWithPhotoRequest request) throws IOException {
-        return ResponseEntity.ok(userService.editProfile(user.getId(), request));
+        return ResponseEntity.ok(userService.editProfile(user.getId(), request, response));
     }
 
     @GetMapping("/api/statistics/my")

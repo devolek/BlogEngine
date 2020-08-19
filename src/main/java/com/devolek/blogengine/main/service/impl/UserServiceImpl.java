@@ -9,6 +9,7 @@ import com.devolek.blogengine.main.dto.response.universal.Response;
 import com.devolek.blogengine.main.dto.response.universal.UniversalResponseFactory;
 import com.devolek.blogengine.main.model.Post;
 import com.devolek.blogengine.main.model.User;
+import com.devolek.blogengine.main.security.jwt.JwtTokenProvider;
 import com.devolek.blogengine.main.service.EmailService;
 import com.devolek.blogengine.main.service.ImageService;
 import com.devolek.blogengine.main.service.UserService;
@@ -16,11 +17,14 @@ import com.devolek.blogengine.main.service.dao.UserDao;
 import com.devolek.blogengine.main.util.CodeGenerator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -37,6 +41,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final ImageService imageService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public static StatisticResponse getStatisticResponse(List<Post> posts) {
         if (posts == null || posts.size() == 0) {
@@ -108,7 +113,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Response editProfile(int userId, EditProfileRequest request) throws IOException {
+    public Response editProfile(int userId, EditProfileRequest request, HttpServletResponse response) throws IOException {
         User user = userDao.findById(userId);
         Map<String, String> errors = new HashMap<>();
         if (!user.getName().equals(request.getName()) && userDao.existsByName(request.getName())) {
@@ -128,7 +133,13 @@ public class UserServiceImpl implements UserService {
         }
 
 
-        user.setEmail(request.getEmail());
+        if (!request.getEmail().equals(user.getEmail())){
+            user.setEmail(request.getEmail());
+            String token = jwtTokenProvider.createToken(user.getEmail());
+            Cookie cookie = new Cookie("Authorization", token);
+            cookie.setPath("/");
+            response.addCookie(cookie);
+        }
         user.setName(request.getName());
         if (request.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -139,8 +150,8 @@ public class UserServiceImpl implements UserService {
         if (request instanceof EditProfileWithPhotoRequest) {
             user.setPhoto(imageService.saveImage(((EditProfileWithPhotoRequest) request).getPhoto(), 36));
         }
-        userDao.save(user);
 
+        userDao.save(user);
         return UniversalResponseFactory.getTrueResponse();
     }
 
