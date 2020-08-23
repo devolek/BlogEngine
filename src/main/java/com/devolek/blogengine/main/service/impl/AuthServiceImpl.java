@@ -19,8 +19,9 @@ import com.devolek.blogengine.main.service.AuthService;
 import com.devolek.blogengine.main.service.CaptchaService;
 import com.devolek.blogengine.main.service.dao.GlobalSettingsDao;
 import com.devolek.blogengine.main.service.dao.UserDao;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,9 +36,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-@AllArgsConstructor
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final CaptchaService captchaService;
@@ -48,6 +49,11 @@ public class AuthServiceImpl implements AuthService {
     private final GlobalSettingsDao globalSettingsDao;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Value("${user.password.minLength}")
+    private int passwordMinLength;
+    @Value("${jwt.token.cookieName}")
+    private String jwtTokenCookieName;
+
     @Override
     public Response register(SignupRequest signUpRequest) {
         Map<String, String> errors = new HashMap<>();
@@ -56,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
             return new ErrorResponse(errors);
         }
         if (userDao.existsByName(signUpRequest.getName())) {
-            errors.put("name", "Имя указано неверно");
+            errors.put("name", "Имя уже существует, попробуйте другое");
         }
 
         if (userDao.existsByEmail(signUpRequest.getEmail())) {
@@ -66,8 +72,8 @@ public class AuthServiceImpl implements AuthService {
             errors.put("captcha", "Код с картинки введён неверно");
         }
 
-        if (signUpRequest.getPassword().length() < 6) {
-            errors.put("password", "Пароль короче 6-ти символов");
+        if (signUpRequest.getPassword().length() < passwordMinLength) {
+            errors.put("password", "Пароль короче " + passwordMinLength + "-ти символов");
         }
 
         if (errors.size() != 0) {
@@ -81,7 +87,6 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(signUpRequest.getPassword());
         Role roleUser = roleRepository.findByRole(ERole.ROLE_USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setPhoto("/default-1.png");
         user.setRoles(Collections.singleton(roleUser));
         user.setIsModerator(0);
         userDao.save(user);
@@ -91,7 +96,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Response logout(HttpServletResponse response) {
-        Cookie cookie = new Cookie("Authorization", null);
+        Cookie cookie = new Cookie(jwtTokenCookieName, null);
         cookie.setPath("/");
         response.addCookie(cookie);
         return UniversalResponseFactory.getTrueResponse();
@@ -122,7 +127,7 @@ public class AuthServiceImpl implements AuthService {
 
             User user = userDao.findByEmail(email);
             String token = jwtTokenProvider.createToken(email);
-            Cookie cookie = new Cookie("Authorization", token);
+            Cookie cookie = new Cookie(jwtTokenCookieName, token);
             cookie.setPath("/");
             response.addCookie(cookie);
 

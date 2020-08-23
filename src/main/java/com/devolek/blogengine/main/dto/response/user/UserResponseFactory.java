@@ -6,7 +6,6 @@ import com.devolek.blogengine.main.model.User;
 public class UserResponseFactory {
 
     public static LoginResponse getAuthenticateUserResponse(User user, int moderationCount){
-
         return new LoginResponse(true, getUserDto(user, moderationCount));
     }
 

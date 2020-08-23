@@ -19,6 +19,7 @@ import com.devolek.blogengine.main.repo.TagRepository;
 import com.devolek.blogengine.main.service.PostService;
 import com.devolek.blogengine.main.service.dao.GlobalSettingsDao;
 import com.devolek.blogengine.main.service.dao.UserDao;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostVotesRepository postVotesRepository;
     private final PostRepository postRepository;
@@ -46,18 +48,6 @@ public class PostServiceImpl implements PostService {
     @Value("${post.title.minLength}")
     private int titleMinLength;
 
-
-    public PostServiceImpl(PostVotesRepository postVotesRepository,
-                           PostRepository postRepository,
-                           TagRepository tagRepository,
-                           GlobalSettingsDao globalSettingsDao,
-                           UserDao userDao) {
-        this.postVotesRepository = postVotesRepository;
-        this.postRepository = postRepository;
-        this.tagRepository = tagRepository;
-        this.globalSettingsDao = globalSettingsDao;
-        this.userDao = userDao;
-    }
 
     @Override
     public Post findPostById(int id) {
@@ -224,7 +214,7 @@ public class PostServiceImpl implements PostService {
         date.setTimeInMillis(request.getTimestamp() * 1000);
 
         Response error = checkPostRequest(request);
-        if (error != null) {
+        if (error instanceof ErrorResponse) {
             return error;
         }
 
@@ -280,7 +270,7 @@ public class PostServiceImpl implements PostService {
         }
 
         Response error = checkPostRequest(request);
-        if (error != null) {
+        if (error instanceof ErrorResponse) {
             return error;
         }
 
@@ -327,7 +317,7 @@ public class PostServiceImpl implements PostService {
         if (errors.size() != 0) {
             return new ErrorResponse(errors);
         }
-        return null;
+        return UniversalResponseFactory.getTrueResponse();
     }
 
     @Override

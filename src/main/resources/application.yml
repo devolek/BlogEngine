@@ -22,6 +22,7 @@ jwt:
   token:
     secret: blogEngineDevolekSecretKey
     expired: 86400000
+    cookieName: "Authorization"
 
 upload:
   path: @root.path@
@@ -35,8 +36,27 @@ post:
     minLength: 10
   text:
     minLength: 500
+  comment:
+    minLength: 10
+user:
+  password:
+    minLength: 6
+  photo:
+    width: 36
 
-project.name: <Блог для разработчиков/>
+project:
+  name: <Блог для разработчиков/>
+  info:
+    title: "DevPub"
+    subtitle: "Рассказы разработчиков"
+    phone: "+7 965 787-12-34"
+    email: "mail@mail.ru"
+    copyright: "Наумов Валентин"
+    copyrightFrom: "2020"
+  link:
+    changePassword: "/login/change-password/"
+    expiredMessage: "Ссылка для восстановления пароля устарела.\n \t<a href=\"/auth/restore\">Запросить ссылку снова</a>"
+
 
 captcha.expirationMs: 3600000
 

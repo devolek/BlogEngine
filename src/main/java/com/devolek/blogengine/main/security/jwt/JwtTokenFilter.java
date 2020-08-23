@@ -2,6 +2,7 @@ package com.devolek.blogengine.main.security.jwt;
 
 import com.devolek.blogengine.main.exeption.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
@@ -19,6 +20,8 @@ import java.io.IOException;
 public class JwtTokenFilter extends GenericFilterBean {
 
     private final JwtTokenProvider jwtTokenProvider;
+    @Value("${jwt.token.cookieName}")
+    private String jwtTokenCookieName;
 
     public JwtTokenFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
@@ -38,7 +41,7 @@ public class JwtTokenFilter extends GenericFilterBean {
             filterChain.doFilter(servletRequest, servletResponse);
         } catch (JwtAuthenticationException | UserNotFoundException ex) {
             HttpServletResponse response = (HttpServletResponse) servletResponse;
-            Cookie cookie = new Cookie("Authorization", null);
+            Cookie cookie = new Cookie(jwtTokenCookieName, null);
             cookie.setPath("/");
             response.addCookie(cookie);
             log.warn(ex.getMessage());

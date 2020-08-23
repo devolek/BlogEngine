@@ -1,11 +1,11 @@
 package com.devolek.blogengine.main.service.impl;
 
 import com.devolek.blogengine.main.dto.response.captcha.CaptchaResponse;
-import com.devolek.blogengine.main.dto.response.universal.Response;
 import com.devolek.blogengine.main.model.CaptchaCode;
 import com.devolek.blogengine.main.repo.CaptchaCodesRepository;
 import com.devolek.blogengine.main.service.CaptchaService;
 import com.devolek.blogengine.main.util.CaptchaGenerator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,16 +13,12 @@ import java.io.IOException;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class CaptchaServiceImpl implements CaptchaService {
     private final CaptchaCodesRepository captchaCodesRepository;
     private final CaptchaGenerator captchaGenerator;
     @Value("${captcha.expirationMs}")
     private long captchaExpirationMs;
-
-    public CaptchaServiceImpl(CaptchaCodesRepository captchaCodesRepository, CaptchaGenerator captchaGenerator) {
-        this.captchaCodesRepository = captchaCodesRepository;
-        this.captchaGenerator = captchaGenerator;
-    }
 
     @Override
     public CaptchaResponse getCaptcha() throws IOException {

@@ -19,6 +19,8 @@ import java.util.UUID;
 public class ImageServiceImpl implements ImageService {
     @Value("${upload.path}")
     private String uploadPath;
+    @Value("${user.photo.width}")
+    private int userPhotoWidth;
 
     @Override
     public String saveImage(MultipartFile file, int width) throws IOException {
@@ -51,7 +53,7 @@ public class ImageServiceImpl implements ImageService {
     public void resizeImage(File file, String dstFolder, String fileFormat, int width) throws IOException {
         BufferedImage image = ImageIO.read(file);
 
-        int newHeight = width == 36 ? 36 : (int) Math.round(
+        int newHeight = width == userPhotoWidth ? userPhotoWidth : (int) Math.round(
                 image.getHeight() / (image.getWidth() / (double) width));
 
         BufferedImage scaledImg = Scalr.resize(image, Scalr.Method.SPEED, Scalr.Mode.FIT_TO_WIDTH,

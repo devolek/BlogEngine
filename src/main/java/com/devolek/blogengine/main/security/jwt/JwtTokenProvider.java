@@ -21,12 +21,13 @@ import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
-    public static final String HEADER = "Authorization";
     private final UserDetailsService userDetailsService;
     @Value("${jwt.token.secret}")
     private String secret;
     @Value("${jwt.token.expired}")
     private long validityInMilliseconds;
+    @Value("${jwt.token.cookieName}")
+    private String jwtTokenCookieName;
 
     public JwtTokenProvider(@Qualifier("userDetailsServiceImpl") UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -74,7 +75,7 @@ public class JwtTokenProvider {
             return null;
         }
         List<Cookie> cookies = Arrays.stream(req.getCookies())
-                .filter(c -> c.getName().equals(HEADER))
+                .filter(c -> c.getName().equals(jwtTokenCookieName))
                 .collect(Collectors.toList());
         if (cookies.isEmpty() || cookies.get(0).getValue().equals("")) {
             return null;

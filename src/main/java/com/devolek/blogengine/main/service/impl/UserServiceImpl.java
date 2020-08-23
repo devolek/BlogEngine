@@ -15,9 +15,9 @@ import com.devolek.blogengine.main.service.ImageService;
 import com.devolek.blogengine.main.service.UserService;
 import com.devolek.blogengine.main.service.dao.UserDao;
 import com.devolek.blogengine.main.util.CodeGenerator;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
@@ -42,6 +42,16 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final ImageService imageService;
     private final JwtTokenProvider jwtTokenProvider;
+    @Value("${user.photo.width}")
+    private int userPhotoWidth;
+    @Value("${user.password.minLength}")
+    private int passwordMinLength;
+    @Value("${project.link.changePassword}")
+    private String changePasswordLink;
+    @Value("${project.link.expiredMessage}")
+    private String expiredMessage;
+    @Value("${jwt.token.cookieName}")
+    private String jwtTokenCookieName;
 
     public static StatisticResponse getStatisticResponse(List<Post> posts) {
         if (posts == null || posts.size() == 0) {
@@ -80,7 +90,7 @@ public class UserServiceImpl implements UserService {
             emailService.sendPasswordRecovery(email, user.getName(),
                     request.getScheme() + "://" + request.getServerName() +
                             ":" + request.getServerPort() +
-                            "/login/change-password/" + code);
+                            changePasswordLink + code);
             log.info("User {} requested password recovery, confirmation email was sent", email);
             return UniversalResponseFactory.getTrueResponse();
         } catch (UsernameNotFoundException e) {
@@ -93,15 +103,14 @@ public class UserServiceImpl implements UserService {
         Map<String, String> errors = new HashMap<>();
         User user = userDao.findByCode(request.getCode());
         if (user == null) {
-            errors.put("code", "Ссылка для восстановления пароля устарела.\n" +
-                    "\t<a href=\"/auth/restore\">Запросить ссылку снова</a>");
+            errors.put("code", expiredMessage);
         }
         if (!captchaService.validateCaptcha(request.getCaptcha(), request.getCaptchaSecret())) {
             errors.put("captcha", "Код с картинки введён неверно");
         }
 
-        if (request.getPassword().length() < 6) {
-            errors.put("password", "Пароль короче 6-ти символов");
+        if (request.getPassword().length() < passwordMinLength) {
+            errors.put("password", "Пароль короче " + passwordMinLength + "-ти символов");
         }
         if (errors.size() != 0) {
             return new ErrorResponse(errors);
@@ -117,15 +126,15 @@ public class UserServiceImpl implements UserService {
         User user = userDao.findById(userId);
         Map<String, String> errors = new HashMap<>();
         if (!user.getName().equals(request.getName()) && userDao.existsByName(request.getName())) {
-            errors.put("name", "Имя указано неверно");
+            errors.put("name", "Имя уже существует, попробуйте другое");
         }
 
         if (!user.getEmail().equals(request.getEmail()) && userDao.existsByEmail(request.getEmail())) {
             errors.put("email", "Этот e-mail уже зарегистрирован");
         }
 
-        if (request.getPassword() != null && request.getPassword().length() < 6) {
-            errors.put("password", "Пароль короче 6-ти символов");
+        if (request.getPassword() != null && request.getPassword().length() < passwordMinLength) {
+            errors.put("password", "Пароль короче " + passwordMinLength + "-ти символов");
         }
 
         if (errors.size() != 0) {
@@ -133,10 +142,10 @@ public class UserServiceImpl implements UserService {
         }
 
 
-        if (!request.getEmail().equals(user.getEmail())){
+        if (!request.getEmail().equals(user.getEmail())) {
             user.setEmail(request.getEmail());
             String token = jwtTokenProvider.createToken(user.getEmail());
-            Cookie cookie = new Cookie("Authorization", token);
+            Cookie cookie = new Cookie(jwtTokenCookieName, token);
             cookie.setPath("/");
             response.addCookie(cookie);
         }
@@ -148,7 +157,7 @@ public class UserServiceImpl implements UserService {
             user.setPhoto("");
         }
         if (request instanceof EditProfileWithPhotoRequest) {
-            user.setPhoto(imageService.saveImage(((EditProfileWithPhotoRequest) request).getPhoto(), 36));
+            user.setPhoto(imageService.saveImage(((EditProfileWithPhotoRequest) request).getPhoto(), userPhotoWidth));
         }
 
         userDao.save(user);
