@@ -22,7 +22,7 @@ jwt:
   token:
     secret: blogEngineDevolekSecretKey
     expired: 86400000
-    cookieName: "Authorization"
+    cookieName: Authorization
 
 upload:
   path: @root.path@
