@@ -12,9 +12,15 @@ import java.util.TimeZone;
 public class MvcConfig implements WebMvcConfigurer {
     @Value("${upload.path}")
     private String uploadPath;
+    @Value("${db.pathToRootJks}")
+    private String pathToRootJks;
+    @Value("${db.rootJksPassword}")
+    private String rootJksPassword;
 
     @PostConstruct
     public void init() {
+        System.setProperty("javax.net.ssl.trustStore", pathToRootJks);
+        System.setProperty("javax.net.ssl.trustStorePassword", rootJksPassword);
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
 

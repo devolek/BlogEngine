@@ -43,6 +43,9 @@ user:
     minLength: 6
   photo:
     width: 36
+db:
+  pathToRootJks: @root.path@/db/root.jks
+  rootJksPassword: testtest
 
 project:
   name: <Блог для разработчиков/>
